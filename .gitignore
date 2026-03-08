@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Environment variables & secrets
+.env
+.env.*
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# User data (runtime generated)
+uploads/*.pdf
+output/
+projects/
+wbs/*.json
+
+# Keep directory structure
+!uploads/.gitkeep
+!output/.gitkeep
+!wbs/.gitkeep
+!projects/.gitkeep
+
+# Claude Code (session data)
+.claude/
+
+# Streamlit cache
+.streamlit/cache/
