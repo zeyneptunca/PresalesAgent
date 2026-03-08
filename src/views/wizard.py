@@ -531,8 +531,9 @@ def _show_wbs_edit(project_id: str):
 
         with st.status("Kategorizasyon yapiliyor...", expanded=True) as status:
             st.write("WBS kaydedildi")
-            st.write("Deliverable'lar kategorize ediliyor (Claude API)...")
-            st.caption(f"{total_wp} WP | model: claude-opus-4-6 | 20-60 sn")
+            from src.llm_client import get_model_name, get_provider
+            st.write(f"Deliverable'lar kategorize ediliyor ({get_provider().capitalize()} API)...")
+            st.caption(f"{total_wp} WP | model: {get_model_name('heavy')} | 20-60 sn")
             try:
                 categories = categorize_wbs(wbs)
                 st.session_state.categories = categories

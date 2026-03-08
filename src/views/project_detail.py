@@ -588,8 +588,10 @@ def _show_chat_tab(project_id: str):
             with st.status("Cevap hazirlaniyor...", expanded=False) as chat_status:
                 try:
                     categories = st.session_state.get("categories")
+                    scope_text = pm.load_scope_text(project_id) if project_id else None
                     response = chat_with_agent(
-                        st.session_state.chat_messages, wbs, categories, result
+                        st.session_state.chat_messages, wbs, categories, result,
+                        scope_text=scope_text
                     )
                     chat_status.update(label="Cevap hazir", state="complete")
                 except Exception as e:

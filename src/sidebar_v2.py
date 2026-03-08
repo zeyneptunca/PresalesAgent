@@ -14,7 +14,7 @@ from src.views.components import short_name, format_datetime, STEP_CONFIG, STEP_
 def render_sidebar():
     """Ana sidebar renderer — view_mode'a gore uygun icerik gosterir."""
     with st.sidebar:
-        st.markdown("### Efor Tahmin Agent")
+        st.markdown("### PresalesAgent")
         st.caption("Kurumsal yazilim efor tahmini")
 
         st.divider()

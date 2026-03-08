@@ -2,8 +2,8 @@ import json
 import re
 from pathlib import Path
 
-import anthropic
 from json_repair import repair_json
+from src.llm_client import call_llm
 
 
 WBS_SYSTEM_PROMPT = """Sen bir "Senior Business Analyst & WBS Architect"sin.
@@ -186,8 +186,7 @@ def validate_wbs(wbs: dict) -> list[str]:
 
 
 def generate_wbs(pdf_text: str) -> dict:
-    """PDF metninden WBS JSON uretir. Claude API cagrisi #1. Max 2 retry."""
-    client = anthropic.Anthropic(timeout=600.0)
+    """PDF metninden WBS JSON uretir. LLM API cagrisi #1. Max 2 retry."""
     max_retries = 2
 
     messages = [
@@ -196,13 +195,13 @@ def generate_wbs(pdf_text: str) -> dict:
 
     for attempt in range(1 + max_retries):
         try:
-            response = client.messages.create(
-                model="claude-opus-4-6",
-                max_tokens=16000,
+            raw_text = call_llm(
                 system=WBS_SYSTEM_PROMPT,
                 messages=messages,
+                tier="heavy",
+                max_tokens=16000,
+                timeout=600,
             )
-            raw_text = response.content[0].text
 
             # Her yaniti kaydet — parse hatasi olursa dosyadan kurtarilabilir
             saved_path = _save_raw_response(raw_text, "wbs")
@@ -230,9 +229,9 @@ def generate_wbs(pdf_text: str) -> dict:
 
             return wbs
 
-        except (anthropic.APITimeoutError, anthropic.APIConnectionError) as e:
+        except Exception as e:
             if attempt < max_retries:
-                print(f"  API baglanti hatasi, tekrar deneniyor ({attempt + 1}/{max_retries})...")
+                print(f"  API hatasi, tekrar deneniyor ({attempt + 1}/{max_retries})...")
                 continue
             raise WBSGenerationError(f"API hatasi: {e}")
 

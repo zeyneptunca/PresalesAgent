@@ -2,14 +2,14 @@
 
 import json
 
-import anthropic
-
 import src.effort_tables as tables
+from src.llm_client import call_llm
 
 CHAT_SYSTEM_PROMPT = """Sen kurumsal yazilim projelerinde efor tahmini yapan bir uzman danismansin.
 Asagidaki tum bilgilere erisimin var ve kullanicinin sorularina bu bilgilerle cevap veriyorsun.
 
 YAPABILECEKLERIN:
+- Orijinal kapsam dokumanindaki bilgilere referans vererek sorulari cevapla
 - Her WP'nin efor hesaplamasini adim adim acikla (hesaplama hikayesine bak)
 - Neden belirli bir carpanin uygulandigini acikla (tablolara bak)
 - Profiller arasi karsilastirma yap (A vs B vs C)
@@ -19,6 +19,8 @@ YAPABILECEKLERIN:
 - OneFrame eslesmelerini acikla
 - Baglam carpanlarinin etkisini goster
 - Risk ve optimizasyon onerileri sun
+- Kapsam dokumaninda gecen teknik detaylari, is kurallarini ve gereksinimleri acikla
+- Dokumandaki kapsam ile WBS arasindaki eslestirmeyi goster
 
 KURALLAR:
 - Turkce cevap ver
@@ -84,9 +86,16 @@ def _format_tables_summary() -> str:
 
 
 def build_context_block(wbs: dict, categories: dict | None,
-                        effort_result: dict | None) -> str:
+                        effort_result: dict | None,
+                        scope_text: str | None = None) -> str:
     """Tum baglam bilgisini system prompt'a eklenecek string olarak olusturur."""
     parts = []
+
+    # Kapsam dokumani (orijinal PDF metni)
+    if scope_text:
+        parts.append("=== ORIJINAL KAPSAM DOKUMANI ===")
+        parts.append(scope_text)
+        parts.append("=== KAPSAM DOKUMANI SONU ===\n")
 
     # WBS ozeti
     if wbs:
@@ -167,17 +176,15 @@ def build_context_block(wbs: dict, categories: dict | None,
 
 
 def chat(messages: list[dict], wbs: dict, categories: dict | None,
-         effort_result: dict | None) -> str:
+         effort_result: dict | None, scope_text: str | None = None) -> str:
     """Tek bir sohbet turu. Kullanici mesajini alir, AI cevabini dondurur."""
-    client = anthropic.Anthropic()
-
-    context_block = build_context_block(wbs, categories, effort_result)
+    context_block = build_context_block(wbs, categories, effort_result, scope_text)
     system = CHAT_SYSTEM_PROMPT.format(context_block=context_block)
 
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=4000,
+    return call_llm(
         system=system,
         messages=messages,
+        tier="light",
+        max_tokens=4000,
+        timeout=60,
     )
-    return response.content[0].text

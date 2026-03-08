@@ -7,7 +7,7 @@ from src.project_manager_v2 import create_project, list_projects
 def show_dashboard():
     """Ana ekran: yeni proje olusturma formu."""
 
-    st.header("Efor Tahmin Agent")
+    st.header("PresalesAgent")
     st.caption("Kurumsal yazilim projelerinin efor tahminini yapin.")
 
     # ── Yeni Proje Olusturma ──

@@ -1,4 +1,4 @@
-"""Efor Tahmin Agent — Ana uygulama router'i."""
+"""PresalesAgent — Ana uygulama router'i."""
 
 import os
 import streamlit as st
@@ -11,7 +11,7 @@ from src.views.wizard import show_wizard
 from src.views.project_detail import show_project_detail
 from src.views.params_view import show_params
 
-st.set_page_config(page_title="Efor Tahmin Agent", page_icon="📊", layout="wide")
+st.set_page_config(page_title="PresalesAgent", layout="wide")
 inject_custom_css()
 
 
@@ -49,10 +49,13 @@ def init_state():
 # ── Main ───────────────────────────────────────────────────────────────────
 
 def main():
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        st.error("ANTHROPIC_API_KEY ortam degiskeni ayarlanmamis!")
-        st.code("export ANTHROPIC_API_KEY='sk-...'")
+    from src.llm_client import check_api_key
+    ok, msg = check_api_key()
+    if not ok:
+        st.error(msg)
         return
+    else:
+        st.sidebar.caption(msg)
 
     init_state()
     render_sidebar()

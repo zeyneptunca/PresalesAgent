@@ -1,11 +1,11 @@
-"""AI ile deliverable kategorizasyonu ve baglam analizi. Claude Opus 4.6 kullanir."""
+"""AI ile deliverable kategorizasyonu ve baglam analizi."""
 
 import json
 import re
 from pathlib import Path
 
-import anthropic
 from json_repair import repair_json
+from src.llm_client import call_llm
 
 
 CATEGORIZATION_PROMPT = """Sen yazilim projelerinde deliverable kategorizasyonu yapan bir uzmansin.
@@ -176,8 +176,7 @@ def _extract_json(text: str) -> dict:
 
 
 def categorize_wbs(wbs: dict, max_retries: int = 2) -> dict:
-    """WBS'teki deliverable'lari kategorize eder. Ucuz API cagrisi. Retry destekli."""
-    client = anthropic.Anthropic(timeout=600.0)
+    """WBS'teki deliverable'lari kategorize eder. Retry destekli."""
     wbs_json = json.dumps(wbs, ensure_ascii=False, indent=2)
 
     messages = [
@@ -185,14 +184,13 @@ def categorize_wbs(wbs: dict, max_retries: int = 2) -> dict:
     ]
 
     for attempt in range(max_retries + 1):
-        response = client.messages.create(
-            model="claude-opus-4-6",
-            max_tokens=16000,
+        raw_text = call_llm(
             system=CATEGORIZATION_PROMPT,
             messages=messages,
+            tier="heavy",
+            max_tokens=16000,
+            timeout=600,
         )
-
-        raw_text = response.content[0].text
 
         # Her yaniti kaydet — parse hatasi olursa dosyadan kurtarilabilir
         saved_path = _save_raw_response(raw_text, "categorize")
