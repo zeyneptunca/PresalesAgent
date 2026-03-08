@@ -79,9 +79,15 @@ echo ================================================
 echo   Kurulum tamamlandi!
 echo ================================================
 echo.
-echo   Baslatmak icin:
+echo   Anthropic ile baslatmak icin:
 echo     cd %INSTALL_DIR%
 echo     set ANTHROPIC_API_KEY=sk-ant-...
+echo     start.bat
+echo.
+echo   OpenAI ile baslatmak icin:
+echo     cd %INSTALL_DIR%
+echo     set LLM_PROVIDER=openai
+echo     set OPENAI_API_KEY=sk-...
 echo     start.bat
 echo.
 echo   Tarayicida: http://localhost:8501
