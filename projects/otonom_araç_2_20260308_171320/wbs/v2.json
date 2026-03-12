@@ -1,0 +1,786 @@
+{
+  "meta": {
+    "role": "WBS_Architect",
+    "version": "1.0",
+    "source_doc": "Otonom Araç Uzaktan İzleme ve Destek Sistemi - Yazılım Teknik Şartnamesi (SRS) v13.0"
+  },
+  "project_scope_summary": {
+    "project_name": "Otonom Araç Uzaktan İzleme ve Destek (Remote Monitoring & Assistance) Sistemi",
+    "core_objective": "Otonom araçların web tabanlı arayüz üzerinden uzaktan izlenmesi, durum takibi, tanımlı komutların gönderilmesi ve araç içi sesli iletişim sağlanması için araç üstü Gateway, bulut sunucu ve web dashboard bileşenlerinden oluşan, ISO/SAE 21434 ve UNECE WP.29 R155/R156 uyumlu güvenli bir yazılım sistemi geliştirilmesi",
+    "technical_stack_implications": [
+      "Araç üstü Gateway (iWave veya muadili) - Secure Boot, HSM/TPM destekli embedded Linux",
+      "4G/5G bağlantı ile Site-to-Site VPN veya Private APN tüneli",
+      "MQTT over TLS 1.3 (telemetri upstream), WebSocket WSS (komut downstream)",
+      "Secure WebRTC (DTLS + SRTP) veya SRT (video akışı)",
+      "VoIP - SRTP şifreli, SIP/TLS sinyalleşme, Echo Cancellation",
+      "OAuth2/JWT tabanlı API yetkilendirme (RS256/ES256)",
+      "mTLS ile karşılıklı kimlik doğrulama, Private PKI altyapısı",
+      "AES-256 veri şifreleme (data at rest), KMS anahtar yönetimi",
+      "Web Dashboard - Google Maps/OpenStreet harita entegrasyonu",
+      "Bulut altyapısı - HA, Defense in Depth, DMZ/uygulama/veritabanı segmentasyonu",
+      "SIEM entegrasyonu, WAF, IDS/IPS",
+      "Container tabanlı deployment (imzalı image), CI/CD pipeline güvenlik kapıları",
+      "OTA güncelleme mekanizması (A/B partition, anti-rollback)",
+      "RBAC ile 4 rol seviyesi (Admin, Gözetmen, Operatör, İzleyici)"
+    ],
+    "out_of_scope_items": [
+      "Otonom PC tarafındaki veri ayrıştırma (parsing) işlemi - Otokar tarafından yapılacak",
+      "Bulut sunucu donanım ve altyapı temini - Otokar tarafından sağlanacak",
+      "Otonom sürüş yazılımı geliştirme",
+      "Platform bileşenleri (batarya, direksiyon, fren sistemi, CAN hattı) donanım geliştirmesi",
+      "KVKK ve düzenleyici kurumlara bildirim sorumluluğu - Otokar'da",
+      "Mobil uygulama geliştirme (şartnamede ana kapsam dışı, penetrasyon testinde varsa notu var)"
+    ]
+  },
+  "wbs": {
+    "modules": [
+      {
+        "module_id": "MOD-001",
+        "name": "Araç Üstü Gateway Yazılımı",
+        "description": "Gateway donanımı üzerinde koşan, araç ile bulut sunucu arasındaki güvenli haberleşmeyi sağlayan embedded yazılım katmanı. Secure Boot, mTLS, VPN, telemetri iletimi, komut alımı, ses donanımı yönetimi ve OTA güncelleme yeteneklerini kapsar.",
+        "work_packages": [
+          {
+            "wp_id": "WP-001",
+            "name": "Gateway Güvenli Başlatma ve Firmware Güvenliği",
+            "description": "Gateway cihazının Secure Boot, Measured Boot, firmware dijital imza doğrulaması, HSM/TPM entegrasyonu, debug portları devre dışı bırakma ve fiziksel müdahale tespit mekanizmalarının yazılım katmanı geliştirmesi",
+            "deliverables": [
+              "Secure Boot zinciri implementasyonu",
+              "Measured Boot - TPM kayıt mekanizması",
+              "Firmware dijital imza doğrulama modülü",
+              "HSM/TPM anahtar depolama ve erişim API'si",
+              "Debug port (JTAG, UART) devre dışı bırakma konfigürasyonu",
+              "Tamper detection olay yönetimi ve zeroization mekanizması",
+              "Dosya sistemi bütünlük kontrolü (integrity monitoring) servisi"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Yok",
+              "backend_requirements": "Embedded Linux ortamında boot chain doğrulama, TPM 2.0 API entegrasyonu, firmware imza doğrulama (Ed25519 veya RSA), tamper event handler servisi, periyodik dosya sistemi integrity check daemon'u",
+              "integration_points": [
+                "HSM/TPM donanım modülü",
+                "Gateway bootloader",
+                "Fiziksel tamper sensörü"
+              ],
+              "data_implications": "Kriptografik anahtarlar HSM/TPM'de saklanmalı, boot ölçümleri TPM PCR register'larına kaydedilmeli, tamper event'leri loglanmalı"
+            },
+            "complexity": {
+              "level": "very_high",
+              "drivers": [
+                "Donanım seviyesi güvenlik entegrasyonu (TPM 2.0 API, HSM driver)",
+                "Secure Boot chain of trust implementasyonu",
+                "Measured Boot her aşamasının ölçülmesi ve TPM'e kaydı",
+                "Tamper detection ve zeroization kritik zamanlama gereksinimleri",
+                "ASLR, DEP/NX, Stack Canaries bellek koruma mekanizmaları konfigürasyonu",
+                "ISO/SAE 21434 ve UNECE R155 uyumluluk gereksinimleri"
+              ]
+            },
+            "acceptance_criteria": [
+              "Gateway yalnızca imzalı firmware ile başlatılabilmeli",
+              "İmzası geçersiz firmware yükleme girişimi reddedilmeli ve loglanmalı",
+              "TPM'e her boot aşaması kaydedilmeli",
+              "Debug portları üretim cihazında erişilemez olmalı",
+              "Fiziksel müdahale tespitinde anahtar materyali silinmeli veya alarm üretilmeli",
+              "Dosya sistemi bütünlük kontrolü periyodik olarak çalışmalı ve anomali tespit edilmeli"
+            ]
+          },
+          {
+            "wp_id": "WP-002",
+            "name": "Gateway-Sunucu Güvenli İletişim Altyapısı",
+            "description": "Gateway ile bulut sunucu arasındaki VPN tüneli, mTLS bağlantısı, heartbeat mekanizması, bağlantı yaşam döngüsü yönetimi ve ağ segmentasyonu implementasyonu",
+            "deliverables": [
+              "Site-to-Site VPN (IPSec IKEv2 veya WireGuard) istemci implementasyonu",
+              "VPN kill switch mekanizması",
+              "mTLS istemci sertifika yönetimi modülü",
+              "Heartbeat gönderme/alma ve kimlik doğrulamalı heartbeat mekanizması",
+              "Bağlantı kopma tespiti ve exponential backoff ile yeniden bağlanma",
+              "Sunucu sertifikası doğrulama ve certificate pinning modülü",
+              "Araç içi ağ segmentasyonu konfigürasyonu (VLAN bazlı izolasyon)",
+              "Bağlantı Koptu sinyali üretme (Otonom PC'ye Fail-Safe tetikleme)"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Yok",
+              "backend_requirements": "IPSec IKEv2 veya WireGuard VPN client, sertifika tabanlı VPN kimlik doğrulama, mTLS handshake (X.509 client certificate), TLS 1.3 zorunlu, zayıf cipher suite'lerin devre dışı bırakılması, Forward Secrecy (ECDHE), certificate pinning firmware'de uygulanmalı, heartbeat mesajları HMAC ile doğrulanmalı",
+              "integration_points": [
+                "Bulut sunucu VPN gateway",
+                "Private PKI (Certificate Authority)",
+                "HSM/TPM (sertifika ve anahtar depolama)",
+                "Otonom PC Ethernet bağlantısı",
+                "CRL/OCSP sertifika iptal kontrolü"
+              ],
+              "data_implications": "Tüm trafik VPN tüneli üzerinden şifreli iletilmeli, şifrelenmemiş paket ağa çıkmamalı, bağlantı olayları loglanmalı, offline durumda veriler şifreli disk bölümünde tamponlanmalı"
+            },
+            "complexity": {
+              "level": "very_high",
+              "drivers": [
+                "VPN kill switch - açık ağa trafik çıkışının engellenmesi",
+                "mTLS handshake 500ms altı performans gereksinimi",
+                "Certificate pinning firmware entegrasyonu",
+                "Heartbeat kimlik doğrulama (sahte heartbeat enjeksiyon koruması)",
+                "Exponential backoff ile DoS önleme",
+                "Araç içi VLAN segmentasyonu (telemetri, video, komut, CAN ayrımı)",
+                "Fail-Safe mod tetikleme için bağlantı kopma eşik yönetimi",
+                "Sunucu sertifikası her yeniden bağlantıda doğrulama"
+              ]
+            },
+            "acceptance_criteria": [
+              "VPN tüneli koptuğunda hiçbir trafik açık ağa çıkmamalı",
+              "mTLS handshake 500ms altında tamamlanmalı",
+              "Heartbeat kaybı belirli eşiği geçtiğinde Otonom PC'ye Bağlantı Koptu sinyali gönderilmeli",
+              "Yeniden bağlantı exponential backoff ile yapılmalı",
+              "Sahte heartbeat mesajları reddedilmeli ve loglanmalı",
+              "Gateway ile Otonom PC arası Ethernet bağlantısı diğer ağlardan izole olmalı",
+              "Şifrelenmemiş veri paketi ağa çıkmamalı"
+            ]
+          },
+          {
+            "wp_id": "WP-003",
+            "name": "Telemetri Veri İletim Modülü",
+            "description": "Araçtan sunucuya MQTT over TLS 1.3 protokolü ile telemetri verilerinin EK-3'te belirtilen frekanslarda iletilmesi, veri bütünlük kontrolü ve offline tamponlama",
+            "deliverables": [
+              "MQTT over TLS 1.3 istemci implementasyonu",
+              "EK-3 frekanslarına uygun veri toplama ve yayınlama servisi",
+              "SHA-256 hash ile telemetri mesaj bütünlük kontrolü",
+              "Offline veri tamponlama (şifreli disk bölümü) ve bağlantı geldiğinde senkronizasyon",
+              "Veri maskeleme (hassas veri log'a yazılmaması)"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Yok",
+              "backend_requirements": "MQTT client (QoS seviyesi yapılandırılabilir), TLS 1.3 zorunlu, her telemetri mesajına SHA-256 hash eklenmesi, offline buffer şifreli disk partition'da AES-256 ile saklanması, bağlantı restorasyonunda tamponlanmış verilerin sıralı gönderimi",
+              "integration_points": [
+                "Otonom PC (Ethernet üzerinden ham veri alımı)",
+                "CANBUS veri kaynakları",
+                "Bulut sunucu MQTT broker",
+                "HSM (şifreleme anahtarları)"
+              ],
+              "data_implications": "Telemetri verileri İç Kullanım sınıfında, iletimde TLS 1.3 şifreli, offline buffer'da AES-256 şifreli, log dosyalarında hassas veri maskeleme uygulanmalı"
+            },
+            "complexity": {
+              "level": "high",
+              "drivers": [
+                "EK-3'teki çoklu veri frekanslarına uygun zamanlama yönetimi",
+                "200ms altı iletim gecikme gereksinimi (4.5G ağında)",
+                "Offline tamponlama ve senkronizasyon senaryoları",
+                "SHA-256 bütünlük kontrolünün performansa etkisinin minimize edilmesi",
+                "15 aracın eşzamanlı veri gönderimi desteği"
+              ]
+            },
+            "acceptance_criteria": [
+              "Telemetri verileri EK-3'te belirtilen frekanslarda iletilmeli",
+              "Video dışı veri iletim gecikmesi 200ms altında olmalı (4.5G ağında)",
+              "Her mesajda SHA-256 hash bulunmalı",
+              "Bağlantı koptuğunda veriler şifreli olarak tamponlanmalı",
+              "Bağlantı geldiğinde tamponlanmış veriler sıralı olarak gönderilmeli",
+              "Bütünlük kontrolü başarısız mesajlar reddedilmeli ve loglanmalı"
+            ]
+          },
+          {
+            "wp_id": "WP-004",
+            "name": "Komut Alma ve Uygulama Modülü",
+            "description": "Sunucudan WebSocket WSS üzerinden gelen komutların alınması, dijital imza doğrulaması, replay attack koruması, yetki kontrolü, ACK/Executed teyit mekanizması ve Otonom PC'ye iletimi",
+            "deliverables": [
+              "WebSocket (WSS) over TLS 1.3 istemci implementasyonu",
+              "Komut dijital imza doğrulama modülü (HMAC-SHA256 veya Ed25519)",
+              "Nonce ve zaman damgası doğrulama (replay attack koruması, 30sn tolerans)",
+              "Komut yetki ve kimlik bilgisi doğrulama",
+              "ACK (Alındı) ve Executed (Uygulandı) teyit mekanizması",
+              "Rate limiting kontrolü (aşırı komut gönderim koruması)",
+              "Bilinmeyen/yetkisiz komut reddetme ve loglama",
+              "Otonom PC'ye komut iletim katmanı (dijital imzalı)"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Yok",
+              "backend_requirements": "WSS client, komut mesajlarında dijital imza doğrulama, nonce uniqueness kontrolü, zaman damgası 30sn tolerans ile stale komut reddi, rate limiting (5 dakika penceresi), EK-1 komut listesine göre whitelist bazlı komut doğrulama, Otonom PC'ye iletilen komutların dijital imza ile imzalanması",
+              "integration_points": [
+                "Bulut sunucu WebSocket endpoint",
+                "Otonom PC (Ethernet üzerinden komut iletimi)",
+                "HSM/TPM (imza doğrulama anahtarları)",
+                "Güvenlik log sistemi"
+              ],
+              "data_implications": "Komutlar Çok Gizli sınıfında, tüm komutlar loglanmalı (gönderen, zaman, araç, komut tipi, sonuç), yetkisiz komut girişimleri ayrıca güvenlik loguna yazılmalı"
+            },
+            "complexity": {
+              "level": "very_high",
+              "drivers": [
+                "Dijital imza doğrulama performansı (200ms altı iletim gecikmesi)",
+                "Replay attack koruması (nonce + zaman damgası)",
+                "Kritik komut güvenliği (MRM gibi araç güvenliğini etkileyen komutlar)",
+                "Rate limiting ile meşru komutları engellememek arasındaki denge",
+                "ACK/Executed teyit mekanizmasının güvenilirliği",
+                "EK-1'deki tüm komut tiplerinin desteklenmesi",
+                "Otonom PC'ye iletimde ikinci dijital imza katmanı"
+              ]
+            },
+            "acceptance_criteria": [
+              "Komut iletim gecikmesi 200ms altında olmalı (4.5G ağında)",
+              "İmza doğrulaması başarısız komutlar kesinlikle reddedilmeli ve loglanmalı",
+              "30 saniyeden eski zaman damgalı komutlar reddedilmeli",
+              "Tekrar edilen nonce değerli komutlar reddedilmeli",
+              "Her komut için ACK ve Executed teyidi geri gönderilmeli",
+              "5 dakikada aşırı sayıda komut gönderildiğinde rate limiting devreye girmeli",
+              "Bilinmeyen komut tipleri reddedilmeli ve loglanmalı"
+            ]
+          },
+          {
+            "wp_id": "WP-005",
+            "name": "Araç Üstü Video Akış Modülü",
+            "description": "Araçtaki minimum 5 kameradan gelen görüntülerin Secure WebRTC veya SRT protokolü ile düşük gecikme ile bulut sunucuya iletilmesi",
+            "deliverables": [
+              "Secure WebRTC (DTLS + SRTP) veya SRT video akış servisi",
+              "Minimum 5 kamera eşzamanlı akış yönetimi",
+              "1920x1080, 20 FPS video kodlama ve akış",
+              "Adaptive Bitrate mekanizması",
+              "On-demand video akış başlatma/durdurma",
+              "Uçtan uca video şifreleme"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Yok (Gateway tarafı - akış kaynağı)",
+              "backend_requirements": "WebRTC media server entegrasyonu veya SRT streaming, DTLS + SRTP şifreleme, H.264/H.265 video encoding, adaptive bitrate kontrol algoritması, bant genişliği yönetimi, varsayılan olarak akış kapalı - uzaktan başlatma sinyali ile aktifleşme",
+              "integration_points": [
+                "Araç kameraları (minimum 5 adet)",
+                "Bulut sunucu media relay/SFU",
+                "WebRTC signaling sunucusu"
+              ],
+              "data_implications": "Video akışı Gizli sınıfında, uçtan uca şifreli iletim zorunlu, kayıt yapılması durumunda şifreli saklama"
+            },
+            "complexity": {
+              "level": "very_high",
+              "drivers": [
+                "5 eşzamanlı kamera akışının 500ms altı glass-to-glass gecikme",
+                "Adaptive bitrate ile kalite-gecikme optimizasyonu",
+                "4G/5G ağ koşullarında bant genişliği yönetimi",
+                "DTLS + SRTP uçtan uca şifreleme performans etkisi",
+                "3 kullanıcının aynı anda video izlemesi gereksinimi",
+                "Kamera bağlantı kopma durumu yönetimi"
+              ]
+            },
+            "acceptance_criteria": [
+              "Video gecikmesi (glass-to-glass) 500ms altında olmalı (4.5G ağında)",
+              "Minimum 5 kamera eşzamanlı akış yapabilmeli",
+              "Video çözünürlüğü 1920x1080, 20 FPS olmalı",
+              "Video akışı varsayılan kapalı, on-demand başlatılmalı",
+              "Adaptive bitrate düşük bant genişliğinde devreye girmeli",
+              "Video akışı uçtan uca şifreli olmalı"
+            ]
+          },
+          {
+            "wp_id": "WP-006",
+            "name": "Araç Üstü VoIP Sesli İletişim Modülü",
+            "description": "Gateway'e bağlı mikrofon, hoparlör ve çağrı butonu üzerinden çift yönlü sesli iletişim sağlayan VoIP modülü",
+            "deliverables": [
+              "VoIP çift yönlü sesli iletişim servisi",
+              "SRTP şifreli ses iletimi",
+              "SIP/TLS veya eşdeğer güvenli sinyal protokolü",
+              "Yankı önleme (Echo Cancellation) implementasyonu",
+              "Çağrı başlatma butonu entegrasyonu",
+              "Araç içi hoparlör ve mikrofon sürücü entegrasyonu"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Yok (Gateway tarafı - ses kaynağı/hedefi)",
+              "backend_requirements": "SIP/TLS signaling, SRTP media transport, ses codec (Opus veya G.711), echo cancellation DSP, noise suppression, çağrı butonu GPIO interrupt handling, ses donanımı ALSA/PulseAudio driver entegrasyonu",
+              "integration_points": [
+                "Mikrofon ve hoparlör kiti (doğrudan Gateway'e bağlı)",
+                "Çağrı başlatma butonu (GPIO)",
+                "Bulut sunucu VoIP/SIP sunucusu",
+                "Web Dashboard VoIP istemcisi"
+              ],
+              "data_implications": "Sesli iletişim kayıtları KVKK kapsamında kişisel veri, SRTP ile şifreli iletim zorunlu"
+            },
+            "complexity": {
+              "level": "high",
+              "drivers": [
+                "Gerçek zamanlı ses iletimi düşük gecikme gereksinimi",
+                "Echo cancellation kalitesi",
+                "SIP/TLS sinyal güvenliği",
+                "Donanım (mikrofon, hoparlör, buton) doğrudan Gateway entegrasyonu",
+                "4G/5G ağ koşullarında ses kalitesi optimizasyonu"
+              ]
+            },
+            "acceptance_criteria": [
+              "Çift yönlü sesli iletişim çalışmalı",
+              "Ses trafiği SRTP ile şifreli olmalı",
+              "Oturum başlatma SIP/TLS ile güvenli olmalı",
+              "Yankı önleme aktif ve etkili olmalı",
+              "Çağrı butonu ile araç içinden çağrı başlatılabilmeli",
+              "Ses kalitesi anlaşılır seviyede olmalı"
+            ]
+          },
+          {
+            "wp_id": "WP-007",
+            "name": "Gateway OTA Güncelleme Mekanizması",
+            "description": "Gateway firmware'inin uzaktan güvenli şekilde güncellenmesi için OTA mekanizması, A/B partition, anti-rollback, self-test ve UNECE R156 uyumlu güncelleme yönetimi",
+            "deliverables": [
+              "OTA güncelleme istemci servisi",
+              "Güncelleme paketi imza doğrulama modülü",
+              "A/B partition yönetimi ve güvenli geri dönüş (rollback) mekanizması",
+              "Anti-rollback counter implementasyonu",
+              "Güncelleme sonrası otomatik self-test",
+              "Güncelleme paketi şifreli iletim ve depolama",
+              "Araç hareket kontrolü (hareket halinde güncelleme engeli)",
+              "Güncelleme geçmişi loglama"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Yok (Gateway tarafı)",
+              "backend_requirements": "OTA güncelleme istemci daemon, dijital imza doğrulama (yüklenici özel anahtarı ile imzalı paket), A/B partition swap mekanizması, anti-rollback monotonic counter (TPM veya fuse-based), güç kaybı dayanıklılığı (atomik güncelleme), self-test framework, güncelleme paketi AES-256 şifreli transit ve storage",
+              "integration_points": [
+                "Bulut sunucu OTA güncelleme servisi",
+                "HSM/TPM (imza doğrulama, anti-rollback counter)",
+                "Araç hareket durum bilgisi (Otonom PC'den)"
+              ],
+              "data_implications": "Firmware imza anahtarları Çok Gizli sınıfında, güncelleme geçmişi loglanmalı (kim başlattı, ne zaman, hangi versiyon, sonuç), güncelleme paketleri şifreli saklanmalı"
+            },
+            "complexity": {
+              "level": "very_high",
+              "drivers": [
+                "A/B partition atomik swap mekanizması",
+                "Güç kaybı/bağlantı kopma senaryolarında güvenli geri dönüş",
+                "Anti-rollback counter yönetimi",
+                "Self-test başarısızlığında otomatik rollback",
+                "Araç hareket durumu kontrolü entegrasyonu",
+                "UNECE R156 SUMS uyumluluk gereksinimleri",
+                "Şifreli paket iletim ve depolama performansı"
+              ]
+            },
+            "acceptance_criteria": [
+              "İmza doğrulaması başarısız güncelleme paketi reddedilmeli",
+              "Güncelleme sırasında güç kaybında önceki versiyona güvenli dönüş yapılmalı",
+              "Eski firmware versiyonuna yönetici onayı olmadan geçiş engellenmeliş",
+              "Self-test başarısız olursa önceki versiyona otomatik dönülmeli",
+              "Araç hareket halindeyken güncelleme başlatılamamalı",
+              "Güncelleme geçmişi eksiksiz loglanmalı",
+              "Güncelleme paketi transit ve depolamada şifreli olmalı"
+            ]
+          }
+        ]
+      },
+      {
+        "module_id": "MOD-002",
+        "name": "Bulut Sunucu Backend Altyapısı",
+        "description": "Araç gateway'lerinden gelen verilerin işlenmesi, depolanması, web dashboard'a sunulması, komut yönetimi, API katmanı, güvenlik altyapısı ve tüm sunucu tarafı iş mantığını kapsayan bulut tabanlı backend sistemi",
+        "work_packages": [
+          {
+            "wp_id": "WP-008",
+            "name": "Sunucu Altyapısı ve Güvenlik Hardening",
+            "description": "Bulut ortamının Defense in Depth prensibiyle tasarlanması, ağ segmentasyonu, container güvenliği, sunucu hardening, patch management ve yüksek erişilebilirlik konfigürasyonu",
+            "deliverables": [
+              "Bulut altyapı mimarisi tasarımı (DMZ, uygulama, veritabanı segmentleri)",
+              "Ağ segmentasyonu ve firewall kural setleri",
+              "Ortam izolasyonu (geliştirme, test, üretim)",
+              "Container image güvenlik taraması ve imzalama pipeline'ı",
+              "Sunucu hardening (gereksiz servis/port kapatma, CIS Benchmark uyumu)",
+              "Merkezi kimlik yönetimi (IAM) konfigürasyonu",
+              "Patch management süreci ve otomasyonu",
+              "Veritabanı private subnet konfigürasyonu",
+              "Yedekleme şifreleme ve geri yükleme test mekanizması",
+              "Yönetim trafiği ayrı ağ segmenti (SSH, RDP)"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Yok",
+              "backend_requirements": "Cloud provider (AWS/Azure) VPC/VNet tasarımı, subnet segmentasyonu (DMZ, app tier, DB tier, management), security group/NSG kuralları, container orchestration (Kubernetes veya benzeri), image scanning (Trivy/Grype), image signing (Cosign/Notary), CIS Benchmark compliance scanning, IAM role/policy yönetimi, automated patch management, encrypted backup (AES-256), HA konfigürasyonu (multi-AZ/region)",
+              "integration_points": [
+                "Cloud provider IAM servisi",
+                "Container registry",
+                "Backup storage",
+                "SIEM sistemi"
+              ],
+              "data_implications": "Veritabanı doğrudan internete kapalı, yedekler şifreli saklanmalı ve düzenli geri yükleme testi yapılmalı, tüm sunucu erişimleri loglanmalı"
+            },
+            "complexity": {
+              "level": "high",
+              "drivers": [
+                "Çok katmanlı ağ segmentasyonu tasarımı",
+                "Container image güvenlik tarama ve imzalama otomasyonu",
+                "CIS Benchmark uyumlu hardening",
+                "HA mimarisi (multi-AZ)",
+                "Ortam izolasyonu (dev/test/prod)",
+                "Defense in Depth katmanlı güvenlik yaklaşımı"
+              ]
+            },
+            "acceptance_criteria": [
+              "Geliştirme, test ve üretim ortamları ağ seviyesinde izole olmalı",
+              "Veritabanı sunucuları doğrudan internet erişimine kapalı olmalı",
+              "Container image'lar güvenlik taramasından geçirilmiş ve imzalanmış olmalı",
+              "Kullanılmayan servisler ve portlar kapalı olmalı",
+              "CIS Benchmark denetiminden geçmeli",
+              "Yedekler şifreli saklanmalı ve geri yükleme testi başarılı olmalı"
+            ]
+          },
+          {
+            "wp_id": "WP-009",
+            "name": "MQTT Broker ve Telemetri Veri İşleme Servisi",
+            "description": "Araçlardan gelen MQTT telemetri verilerinin alınması, doğrulanması, işlenmesi ve veritabanına kaydedilmesi için sunucu tarafı servis katmanı",
+            "deliverables": [
+              "MQTT Broker kurulumu ve TLS 1.3 konfigürasyonu",
+              "Telemetri mesaj doğrulama servisi (SHA-256 bütünlük kontrolü)",
+              "Veri parsing ve normalizasyon servisi",
+              "Zaman serisi veritabanına veri yazma servisi",
+              "Mesaj kuyruğu yönetimi (backpressure, QoS)",
+              "Bağlantı yönetimi ve araç authentication (mTLS)"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Yok",
+              "backend_requirements": "MQTT broker (Mosquitto, EMQX veya benzeri) TLS 1.3 konfigürasyonu, mTLS client certificate authentication, mesaj bütünlük doğrulama (SHA-256 hash verify), veri parsing/transformation pipeline, time-series database (InfluxDB, TimescaleDB veya benzeri), 15 araç eşzamanlı bağlantı desteği, EK-3 frekanslarında veri alım kapasitesi",
+              "integration_points": [
+                "Gateway MQTT istemcileri",
+                "Zaman serisi veritabanı",
+                "Gerçek zamanlı veri dağıtım servisi (WebSocket)",
+                "Alarm/olay yönetim servisi"
+              ],
+              "data_implications": "Telemetri verileri İç Kullanım sınıfında, veritabanında AES-256 şifreli saklama, veri saklama süreleri tanımlanmalı"
+            },
+            "complexity": {
+              "level": "high",
+              "drivers": [
+                "15 araçtan eşzamanlı yüksek frekanslı veri alımı",
+                "mTLS kimlik doğrulama her bağlantıda",
+                "SHA-256 bütünlük kontrolü performansı",
+                "Zaman serisi veritabanı optimizasyonu",
+                "200ms altı veri iletim gecikmesi desteği"
+              ]
+            },
+            "acceptance_criteria": [
+              "15 araç eşzamanlı veri gönderdiğinde performans kaybı olmamalı",
+              "Bütünlük kontrolü başarısız mesajlar reddedilmeli ve loglanmalı",
+              "Telemetri verileri veritabanında AES-256 şifreli saklanmalı",
+              "mTLS ile sadece yetkili araçlar bağlanabilmeli",
+              "EK-3 frekanslarında veri alımı desteklenmeli"
+            ]
+          },
+          {
+            "wp_id": "WP-010",
+            "name": "Komut Yönetim Servisi",
+            "description": "Web dashboard'dan gelen komutların doğrulanması, imzalanması, araçlara WebSocket üzerinden iletilmesi ve ACK/Executed teyit takibi",
+            "deliverables": [
+              "WebSocket (WSS) sunucu implementasyonu",
+              "Komut dijital imzalama servisi (HMAC-SHA256 veya Ed25519)",
+              "Nonce üretimi ve zaman damgası ekleme",
+              "Operatör kimlik ve yetki doğrulama (OAuth2/JWT entegrasyonu)",
+              "Kritik komut çift onay mekanizması (UI onay + 2FA)",
+              "ACK/Executed teyit takip ve timeout yönetimi",
+              "Rate limiting mekanizması (kullanıcı ve IP bazında)",
+              "Komut loglama servisi (kim, hangi araca, ne zaman, hangi komut)"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Yok (API katmanı)",
+              "backend_requirements": "WebSocket sunucu (WSS, TLS 1.3), komut imzalama (HMAC-SHA256 veya Ed25519), nonce generation (CSPRNG), zaman damgası ekleme, JWT token doğrulama ve yetki kontrolü, RBAC entegrasyonu (yetki matrisine göre komut izin kontrolü), rate limiting (token bucket veya sliding window), ACK/Executed state machine, kritik komutlar için 2FA doğrulama entegrasyonu",
+              "integration_points": [
+                "Web Dashboard (komut gönderim API)",
+                "Gateway WebSocket istemcileri",
+                "OAuth2/JWT kimlik doğrulama servisi",
+                "2FA doğrulama servisi",
+                "RBAC yetki servisi",
+                "Denetim log servisi"
+              ],
+              "data_implications": "Komutlar Çok Gizli sınıfında, tüm komut işlemleri append-only log'a yazılmalı, minimum 5 yıl saklanmalı"
+            },
+            "complexity": {
+              "level": "very_high",
+              "drivers": [
+                "Kritik komut çift onay mekanizması (UI + 2FA)",
+                "Dijital imzalama ve nonce yönetimi",
+                "Replay attack koruması",
+                "Rate limiting ile operasyonel kullanım dengesi",
+                "ACK/Executed state machine ve timeout yönetimi",
+                "200ms altı komut iletim gecikmesi",
+                "Yetki matrisine göre granüler komut erişim kontrolü"
+              ]
+            },
+            "acceptance_criteria": [
+              "Kritik komutlar (MRM, sistem yeniden başlatma) çift onay gerektirsemeli",
+              "Tüm komutlar dijital imzalı olmalı",
+              "Rate limiting aşırı komut gönderimini engellemeli",
+              "ACK/Executed teyitleri izlenebilmeli",
+              "Yetki matrisine uygun olmayan komut gönderim istekleri reddedilmeli",
+              "Tüm komut işlemleri eksiksiz loglanmalı",
+              "Komut iletim gecikmesi 200ms altında olmalı"
+            ]
+          },
+          {
+            "wp_id": "WP-011",
+            "name": "Kimlik Doğrulama ve Yetkilendirme Servisi",
+            "description": "OAuth2/JWT tabanlı kullanıcı kimlik doğrulama, 2FA, oturum yönetimi, RBAC yetkilendirme, şifre politikası ve hesap kilitleme mekanizmaları",
+            "deliverables": [
+              "OAuth2 authorization server implementasyonu",
+              "JWT token üretimi ve doğrulama (RS256 veya ES256)",
+              "Access token (15dk) ve Refresh token (24 saat) yönetimi",
+              "2FA servisi (TOTP ve/veya FIDO2/WebAuthn desteği)",
+              "Şifre politikası uygulama modülü (12 karakter, karmaşıklık, geçmiş 12 şifre, 90 gün geçerlilik, breached password kontrolü)",
+              "Hesap kilitleme mekanizması (5 başarısız deneme, 15dk kilitleme, progressive delay)",
+              "Oturum yönetimi (8 saat aktif, 30dk pasif timeout, maks 2 eşzamanlı oturum, server-side invalidation)",
+              "Oturum token güvenliği (Secure, HttpOnly, SameSite=Strict cookie flags)",
+              "RBAC motoru (Admin, Gözetmen, Operatör, İzleyici + özel roller)",
+              "Yetki matrisi runtime enforcer"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Yok (API katmanı - frontend WP'lerde consume edilecek)",
+              "backend_requirements": "OAuth2 server (Keycloak veya custom), JWT RS256/ES256 imzalama, TOTP (RFC 6238) ve FIDO2/WebAuthn server-side implementasyonu, bcrypt/argon2 password hashing, breached password database entegrasyonu (HaveIBeenPwned API veya offline list), rate limiting (brute-force koruma), session store (Redis veya benzeri), RBAC policy engine, yetki matrisi konfigürasyon tabanlı ve dinamik rol tanımlama desteği",
+              "integration_points": [
+                "Web Dashboard login/session",
+                "API Gateway (tüm endpoint yetki kontrolü)",
+                "Komut yönetim servisi (2FA doğrulama)",
+                "Denetim log servisi",
+                "SIEM (başarısız giriş denemeleri)"
+              ],
+              "data_implications": "Kullanıcı kimlik bilgileri Gizli sınıfında, şifreler hash'lenerek saklanmalı, oturum token'ları kriptografik güvenli rastgele değerlerle üretilmeli, tüm kimlik doğrulama olayları loglanmalı"
+            },
+            "complexity": {
+              "level": "very_high",
+              "drivers": [
+                "Çoklu kimlik doğrulama mekanizması (password + 2FA + device attestation)",
+                "FIDO2/WebAuthn sunucu tarafı implementasyonu",
+                "Breached password database entegrasyonu",
+                "Dinamik rol tanımlama ve yetki matrisi yönetimi",
+                "Eşzamanlı oturum sınırlandırma ve session portability",
+                "Progressive delay hesaplama",
+                "Server-side session invalidation güvenilirliği",
+                "JWT token yaşam döngüsü yönetimi (access/refresh rotation)"
+              ]
+            },
+            "acceptance_criteria": [
+              "Şifre politikası tüm gereksinimleri karşılamalı",
+              "5 başarısız denemede hesap 15dk kilitlenmeli",
+              "Admin ve Gözetmen rollerinde 2FA zorunlu olmalı",
+              "Oturum timeout'ları (8 saat aktif, 30dk pasif) çalışmalı",
+              "Kullanıcı başına maks 2 eşzamanlı oturum sınırı uygulanmalı",
+              "Çıkış yapıldığında token sunucu tarafında geçersiz kılınmalı",
+              "Yetki matrisine göre tüm roller doğru çalışmalı",
+              "Kimlik doğrulama işlemi 2 saniyeden kısa sürmeli"
+            ]
+          },
+          {
+            "wp_id": "WP-012",
+            "name": "API Gateway ve Web Uygulama Güvenlik Katmanı",
+            "description": "Tüm API endpoint'lerinin güvenli sunumu, WAF, DDoS koruması, IP whitelist, CORS politikası, HTTP güvenlik header'ları, input validation ve bot koruması",
+            "deliverables": [
+              "API Gateway konfigürasyonu ve versiyonlama",
+              "WAF (Web Application Firewall) kurulumu ve kural seti",
+              "DDoS koruması (Layer 7) konfigürasyonu",
+              "IP whitelist mekanizması (statik IP, geçici IP 24 saat expiry)",
+              "CORS politikası (izin verilen origin'ler, wildcard yasağı)",
+              "HTTP güvenlik header'ları (CSP, X-Content-Type-Options, X-Frame-Options, HSTS, Referrer-Policy, Permissions-Policy)",
+              "Input validation framework (whitelist tabanlı)",
+              "Rate limiting (kullanıcı ve IP bazında)",
+              "Bot tespit mekanizması (CAPTCHA, JavaScript challenge)",
+              "Geo-blocking konfigürasyonu",
+              "API yanıt güvenliği (stack trace, iç IP sızıntı önleme)"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Yok (API katmanı)",
+              "backend_requirements": "API Gateway (Kong, AWS API Gateway veya benzeri), WAF (ModSecurity, AWS WAF veya benzeri), Layer 7 DDoS protection, IP whitelist management (admin API + firewall rule sync), CSP header konfigürasyonu (unsafe-inline ve unsafe-eval yasağı), HSTS max-age=31536000, OWASP Top 10 koruma kuralları, input validation middleware, rate limiting middleware (token bucket), bot detection integration",
+              "integration_points": [
+                "Tüm backend servisler (reverse proxy)",
+                "Kimlik doğrulama servisi (JWT validation)",
+                "SIEM (WAF logları, rate limiting olayları)",
+                "Firewall (IP whitelist senkronizasyonu)"
+              ],
+              "data_implications": "API yanıtlarında hassas bilgi sızıntısı olmamalı, WAF logları güvenlik loglarına dahil edilmeli, IP whitelist değişiklikleri loglanmalı"
+            },
+            "complexity": {
+              "level": "high",
+              "drivers": [
+                "OWASP Top 10 tüm kategorileri için koruma kuralları",
+                "CSP header konfigürasyonu (unsafe-inline/eval yasağı ile frontend uyumu)",
+                "WAF false positive yönetimi",
+                "IP whitelist dinamik yönetimi (geçici IP, VPN çıkış IP)",
+                "Layer 7 DDoS koruması ile meşru trafik ayırımı",
+                "Güvenlik performans gereksinimi (WAF/IDS 50ms altı gecikme)"
+              ]
+            },
+            "acceptance_criteria": [
+              "Whitelist dışı IP'lerden gelen tüm istekler reddedilmeli",
+              "OWASP Top 10 zafiyetlerine karşı koruma sağlanmalı",
+              "HTTP güvenlik header'ları eksiksiz uygulanmalı",
+              "WAF/IDS kuralları istek yanıt süresini 50ms'den fazla geciktirmemeli",
+              "Rate limiting çalışmalı (kullanıcı ve IP bazında)",
+              "Geçici IP'ler 24 saat sonra otomatik expire olmalı",
+              "API yanıtlarında stack trace veya iç IP adresi bulunmamalı"
+            ]
+          },
+          {
+            "wp_id": "WP-013",
+            "name": "PKI Altyapısı ve Sertifika Yönetim Servisi",
+            "description": "Private Certificate Authority kurulumu, araç sertifikası yaşam döngüsü yönetimi (üretim, dağıtım, yenileme, iptal), CRL/OCSP, anahtar rotasyonu ve KMS entegrasyonu",
+            "deliverables": [
+              "Private PKI (Certificate Authority) kurulumu",
+              "Araç bazlı X.509 sertifika üretim süreci",
+              "Sertifika dağıtım mekanizması",
+              "Sertifika otomatik yenileme servisi (maks 2 yıl geçerlilik)",
+              "CRL (Certificate Revocation List) yönetimi",
+              "OCSP (Online Certificate Status Protocol) responder",
+              "KMS (Key Management System) entegrasyonu",
+              "Anahtar rotasyonu servisi (maks 12 aylık döngü)",
+              "CSPRNG ile anahtar üretimi",
+              "Kompromize anahtar acil iptal ve yenileme prosedürü",
+              "Anahtar yedekleme ve kurtarma mekanizması"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Yok (Admin paneli WP'sinde sertifika durumu görüntüleme mevcut)",
+              "backend_requirements": "Private CA (EJBCA, Vault PKI veya benzeri), X.509 v3 sertifika üretimi, CRL distribution point, OCSP responder, KMS (HashiCorp Vault, AWS KMS veya benzeri), CSPRNG (OpenSSL veya OS-native), anahtar rotasyonu otomasyonu, sertifika geçerlilik izleme ve uyarı, HSM entegrasyonu (CA root key HSM'de)",
+              "integration_points": [
+                "Gateway mTLS istemcileri",
+                "Sunucu TLS sertifikaları",
+                "OTA güncelleme imzalama",
+                "Komut dijital imzalama servisi",
+                "Admin paneli sertifika yönetimi UI"
+              ],
+              "data_implications": "Şifreleme anahtarları ve CA root key Çok Gizli sınıfında, HSM'de saklanmalı, en az iki kişi erişim, tüm sertifika işlemleri loglanmalı"
+            },
+            "complexity": {
+              "level": "very_high",
+              "drivers": [
+                "Private PKI altyapı kurulumu ve CA hiyerarşisi",
+                "HSM entegrasyonu (CA root key güvenliği)",
+                "CRL/OCSP gerçek zamanlı iptal kontrolü",
+                "Otomatik sertifika yenileme ile kesintisiz servis",
+                "Anahtar rotasyonu tüm servislerde koordineli yürütme",
+                "Kompromize anahtar acil müdahale prosedürü",
+                "CSPRNG güvenli anahtar üretimi"
+              ]
+            },
+            "acceptance_criteria": [
+              "Her araç için benzersiz X.509 sertifikası üretilebilmeli",
+              "Sertifikalar HSM/TPM'de saklanmalı",
+              "Sertifika geçerlilik süresi maks 2 yıl olmalı",
+              "Otomatik yenileme çalışmalı",
+              "CRL/OCSP ile gerçek zamanlı iptal kontrolü yapılabilmeli",
+              "Anahtar rotasyonu maks 12 ayda bir gerçekleşmeli",
+              "Kompromize anahtar acil iptal mekanizması çalışmalı",
+              "Anahtarlar kaynak kodda veya config dosyalarında açık metin bulunmamalı"
+            ]
+          },
+          {
+            "wp_id": "WP-014",
+            "name": "Video Relay ve Medya Sunucu Servisi",
+            "description": "Araçlardan gelen video akışlarının web dashboard kullanıcılarına güvenli ve düşük gecikmeli olarak dağıtılması için medya sunucu katmanı",
+            "deliverables": [
+              "WebRTC SFU (Selective Forwarding Unit) veya SRT relay sunucusu",
+              "Video akış oturum yönetimi (on-demand başlatma/durdurma)",
+              "Oturum bazlı video erişim yetkilendirme",
+              "Adaptive bitrate sunucu tarafı yönetimi",
+              "3 eşzamanlı izleyici desteği",
+              "Video şifreli kayıt desteği (opsiyonel kayıt senaryosu)"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Yok (API/media katmanı)",
+              "backend_requirements": "WebRTC SFU (Janus, mediasoup veya benzeri) veya SRT relay, DTLS + SRTP şifreleme, TURN/STUN sunucu konfigürasyonu, oturum bazlı yetkilendirme (JWT token ile video akış erişim kontrolü), adaptive bitrate transcoding veya simulcast, 5 kamera x 1080p x 20FPS bant genişliği yönetimi, video kayıt AES-256 şifreli depolama",
+              "integration_points": [
+                "Gateway video akış kaynakları",
+                "Web Dashboard video player",
+                "Kimlik doğrulama servisi (oturum bazlı yetki)",
+                "RBAC servisi (İzleyici rolü video erişimi yok)"
+              ],
+              "data_implications": "Video akışı Gizli sınıfında, uçtan uca şifreleme, kayıt yapılırsa AES-256 şifreli saklama"
+            },
+            "complexity": {
+              "level": "very_high",
+              "drivers": [
+                "5 kamera eşzamanlı 1080p 20FPS akış yönetimi",
+                "500ms altı glass-to-glass gecikme gereksinimi",
+                "3 eşzamanlı izleyici desteği (SFU fan-out)",
+                "Adaptive bitrate optimizasyonu",
+                "DTLS + SRTP şifreleme performans etkisi",
+                "Bant genişliği yönetimi ve on-demand akış"
+              ]
+            },
+            "acceptance_criteria": [
+              "Video gecikmesi 500ms altında olmalı",
+              "3 kullanıcı aynı anda video izleyebilmeli",
+              "Video akışı oturum bazlı yetkilendirilmeli",
+              "İzleyici rolü video izleyememeli",
+              "Adaptive bitrate düşük bant genişliğinde çalışmalı",
+              "Video akışı uçtan uca şifreli olmalı"
+            ]
+          },
+          {
+            "wp_id": "WP-015",
+            "name": "VoIP Sunucu Servisi",
+            "description": "Araç ile operatör arasındaki çift yönlü sesli iletişimi yöneten sunucu tarafı VoIP altyapısı",
+            "deliverables": [
+              "SIP/TLS signaling sunucusu",
+              "SRTP media relay sunucusu",
+              "Çağrı oturum yönetimi (başlatma, sonlandırma, timeout)",
+              "Oturum bazlı yetkilendirme (RBAC entegrasyonu)",
+              "Çağrı loglama"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Yok (API/media katmanı)",
+              "backend_requirements": "SIP server (Olusip, Olusip, FreeSWITCH, Olusip, Asterisk veya benzeri) TLS konfigürasyonu, SRTP media handling, oturum yönetimi state machine, JWT tabanlı çağrı yetkilendirme, RBAC entegrasyonu (İzleyici rolü VoIP erişimi yok)",
+              "integration_points": [
+                "Gateway VoIP istemcisi",
+                "Web Dashboard VoIP istemcisi",
+                "Kimlik doğrulama servisi",
+                "RBAC servisi",
+                "Denetim log servisi"
+              ],
+              "data_implications": "Sesli iletişim KVKK kapsamında kişisel veri, SRTP şifreli iletim, çağrı meta verileri loglanmalı"
+            },
+            "complexity": {
+              "level": "high",
+              "drivers": [
+                "SIP/TLS signaling güvenliği",
+                "SRTP media relay performansı",
+                "Gerçek zamanlı ses kalitesi optimizasyonu",
+                "NAT traversal (STUN/TURN)",
+                "Çağrı oturum güvenliği ve yetkilendirme"
+              ]
+            },
+            "acceptance_criteria": [
+              "Çift yönlü sesli iletişim çalışmalı",
+              "Ses trafiği SRTP şifreli olmalı",
+              "SIP signaling TLS üzerinden olmalı",
+              "İzleyici rolü VoIP kullanamamalı",
+              "Çağrı olayları loglanmalı"
+            ]
+          },
+          {
+            "wp_id": "WP-016",
+            "name": "Güvenlik İzleme, Loglama ve SIEM Entegrasyonu",
+            "description": "Tüm güvenlik olaylarının merkezi loglanması, SIEM entegrasyonu, anomali tespiti, alarm kuralları ve log bütünlük koruması",
+            "deliverables": [
+              "Merkezi güvenlik log toplama servisi",
+              "Yapılandırılmış log formatı (JSON, UTC ISO 8601)",
+              "SIEM entegrasyonu (log forwarding)",
+              "Anomali tespit korelasyon kuralları",
+              "Otomatik alarm kuralları (brute-force, anormal saat erişimi, coğrafi anomali, eşzamanlı kritik hata, firmware değişikliği, data exfiltration şüphesi)",
+              "Log bütünlük koruması (hash zincirleme veya imza, tamper-proof)",
+              "Append-only denetim logları",
+              "Log saklama yönetimi (güvenlik 2 yıl, operasyonel 1 yıl, denetim 5 yıl)",
+              "Veri maskeleme (hassas veri log'a yazılmaması)",
+              "Log erişim kontrolü (yazma: sadece log servisi, okuma: yetkili personel)"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Yok (Admin paneli ve raporlama WP'lerinde görselleştirme mevcut)",
+              "backend_requirements": "Log aggregation (ELK Stack, Splunk veya benzeri), SIEM entegrasyonu (syslog/CEF/LEEF forwarding), korelasyon kuralları (SIEM correlation engine), hash chain veya digital signature ile log integrity, immutable log storage (WORM storage veya blockchain-based), log rotation ve retention policy, veri maskeleme pipeline, RBAC log erişim kontrolü",
+              "integration_points": [
+                "Tüm backend servisler (log producer)",
+                "SIEM sistemi",
+                "Olay yönetim sistemi (alert routing)",
+                "Gateway log servisi",
+                "SOC ekibi"
+              ],
+              "data_implications": "Loglar hassas veri içermemeli (maskeleme), güvenlik logları minimum 2 yıl, denetim logları minimum 5 yıl saklanmalı, log bütünlüğü kriptografik olarak korunmalı"
+            },
+            "complexity": {
+              "level": "high",
+              "drivers": [
+                "Çoklu kaynak log aggregasyonu ve normalizasyonu",
+                "Korelasyon kuralları tasarımı (false positive minimizasyonu)",
+                "Hash zincirleme ile tamper-proof log bütünlüğü",
+                "Farklı saklama süreleri yönetimi (2/1/5 yıl)",
+                "Veri maskeleme pipeline performansı",
+                "Güvenlik loglarının uygulama performansını %5'ten fazla düşürmemesi"
+              ]
+            },
+            "acceptance_criteria": [
+              "Şartnamede belirtilen tüm olay türleri loglanmalı",
+              "Log formatı JSON, zaman damgası UTC ISO 8601 olmalı",
+              "Loglar SIEM'e iletilmeli",
+              "Otomatik alarm kuralları tanımlı senaryolarda tetiklenmeli",
+              "Denetim logları değiştirilemez formatta tutulmalı",
+              "Log saklama süreleri karşılanmalı",
+              "Güvenlik logları performansı %5'ten fazla düşürmemeli"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

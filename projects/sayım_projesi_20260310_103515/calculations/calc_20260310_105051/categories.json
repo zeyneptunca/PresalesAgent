@@ -1,0 +1,792 @@
+{
+  "wp_kategorileri": {
+    "WP-001": {
+      "deliverables": [
+        {
+          "adi": "Sayım sorumlusu yetkilendirme yönetim ekranı (aktif/pasif toggle)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-FORM",
+          "neden": "Aktif/pasif toggle switch ile kullanıcı atama/güncelleme formu, basit CRUD ekranı"
+        },
+        {
+          "adi": "Şirket-sayım sorumlusu ilişki yönetimi backend servisleri",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-CRUD",
+          "neden": "CRUD operasyonları, listeleme, durum güncelleme API endpoint'leri"
+        },
+        {
+          "adi": "Yetkilendirme durum değişikliği audit log kaydı",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-AUDIT",
+          "neden": "Durum değişikliği audit log kaydı, standart loglama"
+        },
+        {
+          "adi": "Yetkilendirme durum kontrolü middleware/guard güncellemesi",
+          "kategori": "AUTH_COMPONENT",
+          "of_match": "OF-AUTHZ",
+          "neden": "Authorization middleware üzerinde rol bazlı erişim kontrol noktalarının güncellenmesi, yetki bazlı UI/guard"
+        }
+      ],
+      "baskin_kategori": "SIMPLE_UI",
+      "reuse_grubu": null
+    },
+    "WP-002": {
+      "deliverables": [
+        {
+          "adi": "Mail şablon CRUD yönetim ekranı",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-CMS",
+          "neden": "Şablon listeleme/filtreleme, CRUD ekranı"
+        },
+        {
+          "adi": "Şablon önizleme fonksiyonu",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-UI",
+          "neden": "Modal içinde şablon önizleme, basit UI bileşeni"
+        },
+        {
+          "adi": "Mail gönderim servis katmanı yeniden yapılandırması",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-NOTIF",
+          "neden": "SMTP/mail gönderim altyapısı refactoring, TinyEmail entegrasyonu SMTP seviyesinde - integration_points'te gerçek bir dış sistem API entegrasyonu değil, mail gönderim servisi"
+        },
+        {
+          "adi": "Şablon versiyon yönetimi",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-CRUD",
+          "neden": "Versiyon takibi için CRUD veri yönetimi"
+        }
+      ],
+      "baskin_kategori": "SIMPLE_UI",
+      "reuse_grubu": "G1"
+    },
+    "WP-003": {
+      "deliverables": [
+        {
+          "adi": "Rol bazlı alıcı seçim bileşeni (To/CC)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-FORM",
+          "neden": "Multi-select dropdown bileşeni, basit form elemanı"
+        },
+        {
+          "adi": "Rol-alıcı eşleştirme konfigürasyon servisi",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-CRUD",
+          "neden": "Rol-alıcı mapping CRUD konfigürasyonu"
+        },
+        {
+          "adi": "Mail gönderim servisinde dinamik alıcı çözümleme modülü",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-NOTIF",
+          "neden": "Rol bazlı kullanıcı çözümleme logic'i, if-else mantığı ile dinamik liste oluşturma"
+        }
+      ],
+      "baskin_kategori": "SIMPLE_UI",
+      "reuse_grubu": "G1"
+    },
+    "WP-004": {
+      "deliverables": [
+        {
+          "adi": "Kontrolör atama event trigger mekanizması",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-NOTIF",
+          "neden": "Event-driven mail tetikleme, mevcut iş akışına hook eklenmesi"
+        },
+        {
+          "adi": "Otomatik bilgilendirme mail gönderim servisi",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-NOTIF",
+          "neden": "Async mail gönderim servisi çağrısı, basit servis entegrasyonu"
+        },
+        {
+          "adi": "Kontrolör atama mail şablonu",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-NOTIF",
+          "neden": "Mail şablonu tanımı, statik içerik"
+        }
+      ],
+      "baskin_kategori": "SIMPLE_UI",
+      "reuse_grubu": "G1"
+    },
+    "WP-005": {
+      "deliverables": [
+        {
+          "adi": "Yeni veri kaynağı entegrasyon servisi (API client/adapter)",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-CRUD",
+          "neden": "Dış sistem REST/SOAP API adapter geliştirmesi, yeni veri kaynağı sistemiyle entegrasyon"
+        },
+        {
+          "adi": "Denetçi listesi senkronizasyon modülü",
+          "kategori": "BACKGROUND_JOB",
+          "of_match": "OF-HANGFIRE",
+          "neden": "Periyodik senkronizasyon scheduler, event-driven veya zamanlanmış batch sync"
+        },
+        {
+          "adi": "Şirket listesi senkronizasyon modülü",
+          "kategori": "BACKGROUND_JOB",
+          "of_match": "OF-HANGFIRE",
+          "neden": "Periyodik senkronizasyon scheduler, batch sync işlemi"
+        },
+        {
+          "adi": "Veri eşleştirme ve dönüşüm (mapping/transformation) katmanı",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-CRUD",
+          "neden": "Dış sistemden gelen verilerin mapping/dönüşüm katmanı, entegrasyon bağlamında veri normalizasyonu"
+        },
+        {
+          "adi": "Hata yönetimi ve senkronizasyon log mekanizması",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-AUDIT",
+          "neden": "Hata loglama ve admin ekranında senkronizasyon durumu gösterimi"
+        }
+      ],
+      "baskin_kategori": "INTEGRATION",
+      "reuse_grubu": null
+    },
+    "WP-006": {
+      "deliverables": [
+        {
+          "adi": "Durum yönetimi state machine implementasyonu",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-WORKFLOW",
+          "neden": "State machine pattern, iş akışı durum geçişleri - dinamik kural motoru değil, sabit durum geçiş kuralları"
+        },
+        {
+          "adi": "Durum güncelleme ekran bileşenleri",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-UI",
+          "neden": "Status badge, durum geçiş butonları, basit UI bileşenleri"
+        },
+        {
+          "adi": "Durum geçiş kuralları konfigürasyonu",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-WORKFLOW",
+          "neden": "Valid transitions validasyonu, sabit kural seti konfigürasyonu"
+        },
+        {
+          "adi": "Durum değişikliği bildirim mekanizması",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-NOTIF",
+          "neden": "Durum değişikliğinde event yayını ve bildirim tetikleme"
+        }
+      ],
+      "baskin_kategori": "SIMPLE_UI",
+      "reuse_grubu": "G2"
+    },
+    "WP-007": {
+      "deliverables": [
+        {
+          "adi": "Dönem sonlandırma onay modal/dialog bileşeni",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-UI",
+          "neden": "React confirmation modal, onayla/iptal aksiyonları, basit dialog"
+        },
+        {
+          "adi": "Onay akışı backend validasyonu",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-VALID",
+          "neden": "Backend'de dönem sonlandırma kontrol logic'i, basit validasyon"
+        },
+        {
+          "adi": "Onay loglama mekanizması",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-AUDIT",
+          "neden": "Onay log kaydı, standart audit logging"
+        }
+      ],
+      "baskin_kategori": "SIMPLE_UI",
+      "reuse_grubu": "G2"
+    },
+    "WP-008": {
+      "deliverables": [
+        {
+          "adi": "Anket soruları dönem kopyalama modülü",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-CRUD",
+          "neden": "Deep copy logic, ilişkisel verilerin kopyalanması, transactional CRUD işlemi"
+        },
+        {
+          "adi": "Kopyalama sonrası doğrulama mekanizması",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-VALID",
+          "neden": "Kopyalanan verilerin doğruluk kontrolü, basit validasyon"
+        },
+        {
+          "adi": "Kopyalama log ve hata yönetimi",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-AUDIT",
+          "neden": "Hata loglama ve rollback mekanizması, standart hata yönetimi"
+        }
+      ],
+      "baskin_kategori": "SIMPLE_UI",
+      "reuse_grubu": "G2"
+    },
+    "WP-009": {
+      "deliverables": [
+        {
+          "adi": "Talep güncelleme form/inline edit bileşeni",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-FORM",
+          "neden": "Inline edit veya modal form, basit form bileşeni"
+        },
+        {
+          "adi": "Talep güncelleme API endpoint'leri",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-CRUD",
+          "neden": "PUT/PATCH API endpoint'leri, standart CRUD"
+        },
+        {
+          "adi": "Güncelleme validasyon kuralları",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-VALID",
+          "neden": "İş kuralları validasyonu, hangi alanlar güncellenebilir kontrolü"
+        },
+        {
+          "adi": "Güncelleme geçmişi/audit trail",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-AUDIT",
+          "neden": "Güncelleme audit trail kaydı"
+        }
+      ],
+      "baskin_kategori": "SIMPLE_UI",
+      "reuse_grubu": "G2"
+    },
+    "WP-010": {
+      "deliverables": [
+        {
+          "adi": ".NET 10 uyumlu backend proje yapısı",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-DATA",
+          "neden": "Framework yükseltme, proje yapısı güncelleme - kategori SIMPLE_UI fallback (altyapı çalışması)"
+        },
+        {
+          "adi": "NuGet paket güncellemeleri ve uyumsuzluk çözümleri",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Paket uyumsuzluk çözümleri, teknik bakım çalışması"
+        },
+        {
+          "adi": "Deprecated API kullanımlarının güncellenmesi",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Obsolete API güncelleme, kod modernizasyonu"
+        },
+        {
+          "adi": "Build ve CI/CD pipeline güncellemeleri",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "CI/CD pipeline güncelleme, altyapı konfigürasyonu"
+        },
+        {
+          "adi": "Yükseltme sonrası regresyon test raporu",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-VALID",
+          "neden": "Test raporu, doküman çıktısı"
+        }
+      ],
+      "baskin_kategori": "SIMPLE_UI",
+      "reuse_grubu": "G3"
+    },
+    "WP-011": {
+      "deliverables": [
+        {
+          "adi": "React güncel LTS uyumlu frontend proje yapısı",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-UI",
+          "neden": "Frontend framework yükseltme, proje yapısı güncelleme"
+        },
+        {
+          "adi": "NPM paket güncellemeleri ve uyumsuzluk çözümleri",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Paket uyumsuzluk çözümleri, teknik bakım"
+        },
+        {
+          "adi": "Deprecated lifecycle method ve API güncellemeleri",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-UI",
+          "neden": "Class component modernizasyon, lifecycle method güncelleme"
+        },
+        {
+          "adi": "Frontend build ve CI/CD pipeline güncellemeleri",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Build toolchain güncelleme"
+        },
+        {
+          "adi": "Yükseltme sonrası görsel/fonksiyonel regresyon test raporu",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-VALID",
+          "neden": "Test raporu çıktısı"
+        }
+      ],
+      "baskin_kategori": "SIMPLE_UI",
+      "reuse_grubu": "G3"
+    },
+    "WP-012": {
+      "deliverables": [
+        {
+          "adi": "Bağımlılık analizi raporu",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Analiz raporu dokümanı"
+        },
+        {
+          "adi": "Refactored kod modülleri (loose coupling)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-CRUD",
+          "neden": "Kod refactoring çalışması, interface abstraction"
+        },
+        {
+          "adi": "Dependency injection iyileştirmeleri",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "DI container iyileştirme, teknik bakım"
+        },
+        {
+          "adi": "Kod yapısı dokümantasyonu güncellemesi",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Dokümantasyon güncelleme"
+        }
+      ],
+      "baskin_kategori": "SIMPLE_UI",
+      "reuse_grubu": "G4"
+    },
+    "WP-013": {
+      "deliverables": [
+        {
+          "adi": "SonarQube proje konfigürasyonu",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-ERR",
+          "neden": "SonarQube dış aracı ile entegrasyon konfigürasyonu"
+        },
+        {
+          "adi": "CI/CD pipeline'a SonarQube analiz adımı entegrasyonu",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-ERR",
+          "neden": "CI/CD pipeline'a dış araç entegrasyonu"
+        },
+        {
+          "adi": "Quality gate tanımları",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Kural tanımı, konfigürasyon çalışması"
+        },
+        {
+          "adi": "Bulgu çözüm çalışmaları (max 2 a/g sınırı dahilinde)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Kod kalitesi düzeltmeleri"
+        },
+        {
+          "adi": "SonarQube dashboard ve raporlama yapılandırması",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-REPORT",
+          "neden": "Dashboard yapılandırması, SonarQube platformu üzerinde konfigürasyon"
+        }
+      ],
+      "baskin_kategori": "SIMPLE_UI",
+      "reuse_grubu": "G4"
+    },
+    "WP-014": {
+      "deliverables": [
+        {
+          "adi": "Mevcut test kapsamı analiz raporu",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Analiz raporu dokümanı"
+        },
+        {
+          "adi": "Birim test stratejisi ve kapsam planı",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Strateji dokümanı"
+        },
+        {
+          "adi": "Yeni birim testler (hedef %70 artış)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-VALID",
+          "neden": "Test yazım çalışması"
+        },
+        {
+          "adi": "Test coverage raporlama entegrasyonu",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-REPORT",
+          "neden": "CI/CD'ye coverage rapor entegrasyonu"
+        }
+      ],
+      "baskin_kategori": "SIMPLE_UI",
+      "reuse_grubu": "G4"
+    },
+    "WP-015": {
+      "deliverables": [
+        {
+          "adi": "OWASP Top 10 güvenlik değerlendirme raporu",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Güvenlik değerlendirme raporu dokümanı"
+        },
+        {
+          "adi": "SQL Injection koruması doğrulaması/güçlendirmesi",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-VALID",
+          "neden": "Parameterized query doğrulama, güvenlik keyword'ü var ama bu alan bazlı maskeleme/gizleme değil, genel güvenlik hardening'i - indirgeme istisnası uygulanmaz çünkü AUTH_COMPONENT field masking/rol bazlı alan gizleme değil"
+        },
+        {
+          "adi": "XSS (Cross-Site Scripting) koruması",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-VALID",
+          "neden": "Output encoding, input sanitization - güvenlik hardening"
+        },
+        {
+          "adi": "CSRF koruması",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Anti-forgery token middleware konfigürasyonu"
+        },
+        {
+          "adi": "Authentication/Authorization güçlendirmeleri",
+          "kategori": "AUTH_COMPONENT",
+          "of_match": "OF-AUTHZ",
+          "neden": "Yetki bazlı erişim güçlendirme, güvenlik keyword'ü ile birlikte authorization katmanı"
+        },
+        {
+          "adi": "Sensitive data exposure koruması",
+          "kategori": "AUTH_COMPONENT",
+          "of_match": "OF-AUTHZ",
+          "neden": "Hassas veri maskeleme/koruma, KVKK/güvenlik bağlamında field-level koruma"
+        },
+        {
+          "adi": "Security header yapılandırmaları",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Middleware konfigürasyonu (HSTS, X-Frame-Options, CSP)"
+        },
+        {
+          "adi": "Input validation güçlendirmesi",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-VALID",
+          "neden": "Genel input validation/sanitization güçlendirmesi"
+        }
+      ],
+      "baskin_kategori": "SIMPLE_UI",
+      "reuse_grubu": null
+    },
+    "WP-016": {
+      "deliverables": [
+        {
+          "adi": "Microsoft Entra SSO konfigürasyonu",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUTH",
+          "neden": "Microsoft Entra (Azure AD) dış SSO sistemiyle entegrasyon"
+        },
+        {
+          "adi": "OAuth 2.0 / OpenID Connect akış implementasyonu",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUTH",
+          "neden": "SSO protokol implementasyonu, dış identity provider entegrasyonu"
+        },
+        {
+          "adi": "Token yönetimi (access token, refresh token) mekanizması",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUTH",
+          "neden": "Token lifecycle yönetimi, SSO entegrasyonunun parçası"
+        },
+        {
+          "adi": "Mevcut authentication flow'dan SSO'ya geçiş migrasyonu",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUTH",
+          "neden": "Mevcut auth mekanizmasından SSO'ya geçiş, dış sistem bağımlılığı"
+        },
+        {
+          "adi": "Rol ve yetkilendirme mapping'i (SSO grupları → uygulama rolleri)",
+          "kategori": "AUTH_COMPONENT",
+          "of_match": "OF-AUTHZ",
+          "neden": "SSO gruplarından uygulama rollerine mapping, rol bazlı erişim kontrolü"
+        }
+      ],
+      "baskin_kategori": "INTEGRATION",
+      "reuse_grubu": null
+    },
+    "WP-017": {
+      "deliverables": [
+        {
+          "adi": "SAST aracı konfigürasyonu ve CI/CD entegrasyonu",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-ERR",
+          "neden": "Dış SAST aracıyla CI/CD entegrasyonu"
+        },
+        {
+          "adi": "DAST aracı konfigürasyonu ve CI/CD entegrasyonu",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-ERR",
+          "neden": "Dış DAST aracıyla CI/CD entegrasyonu"
+        },
+        {
+          "adi": "Güvenlik test politikaları ve eşik değer tanımları",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Politika/kural tanımı dokümanı ve konfigürasyon"
+        },
+        {
+          "adi": "Bulgu çözüm çalışmaları (max 2 a/g sınırı dahilinde)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Güvenlik bulgu düzeltmeleri"
+        },
+        {
+          "adi": "Güvenlik test raporu",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-REPORT",
+          "neden": "Rapor dokümanı çıktısı"
+        }
+      ],
+      "baskin_kategori": "SIMPLE_UI",
+      "reuse_grubu": "G5"
+    },
+    "WP-018": {
+      "deliverables": [
+        {
+          "adi": "Yapılandırılmış (structured) log altyapısı implementasyonu",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-AUDIT",
+          "neden": "Serilog/NLog konfigürasyonu, structured logging setup"
+        },
+        {
+          "adi": "Merkezi log toplama entegrasyonu (ELK/Splunk/Azure Monitor vb.)",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUDIT",
+          "neden": "Dış merkezi loglama platformuyla entegrasyon (ELK/Splunk/Azure Monitor)"
+        },
+        {
+          "adi": "APM entegrasyonu (Application Insights/Elastic APM/Datadog vb.)",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUDIT",
+          "neden": "Dış APM platformuyla entegrasyon"
+        },
+        {
+          "adi": "Log seviyeleri ve log politikaları tanımı",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-AUDIT",
+          "neden": "Politika tanımı ve konfigürasyon"
+        },
+        {
+          "adi": "Correlation ID implementasyonu (distributed tracing)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-AUDIT",
+          "neden": "Middleware'de correlation ID propagation, teknik altyapı çalışması"
+        }
+      ],
+      "baskin_kategori": "INTEGRATION",
+      "reuse_grubu": "G5"
+    },
+    "WP-019": {
+      "deliverables": [
+        {
+          "adi": "Alert kuralları tanım dokümanı",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-AUDIT",
+          "neden": "Doküman çıktısı"
+        },
+        {
+          "adi": "Uygulama seviyesi alert konfigürasyonları (hata oranı, yanıt süresi vb.)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-AUDIT",
+          "neden": "APM platformunda alert rule konfigürasyonu"
+        },
+        {
+          "adi": "Altyapı seviyesi alert konfigürasyonları (CPU, memory, disk vb.)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-AUDIT",
+          "neden": "Monitoring platformunda altyapı alert konfigürasyonu"
+        },
+        {
+          "adi": "Alert bildirim kanalları yapılandırması (email, Teams vb.)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-NOTIF",
+          "neden": "Bildirim kanalı konfigürasyonu"
+        },
+        {
+          "adi": "Alert eskalasyon kuralları",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-AUDIT",
+          "neden": "Eskalasyon kuralları tanımı"
+        }
+      ],
+      "baskin_kategori": "SIMPLE_UI",
+      "reuse_grubu": "G5"
+    },
+    "WP-020": {
+      "deliverables": [
+        {
+          "adi": "Azure KeyVault entegrasyonu",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUTH",
+          "neden": "Azure KeyVault dış servisiyle entegrasyon, managed identity/service principal"
+        },
+        {
+          "adi": "Hassas konfigürasyon değerlerinin KeyVault'a taşınması",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Mevcut config değerlerinin taşınması, migrasyon çalışması"
+        },
+        {
+          "adi": "Ortam bazlı konfigürasyon yapılandırması (dev/test/staging/prod)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Ortam bazlı konfigürasyon dosyaları düzenlemesi"
+        },
+        {
+          "adi": "Konfigürasyon değişiklik yönetimi prosedürü",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Prosedür dokümanı"
+        }
+      ],
+      "baskin_kategori": "SIMPLE_UI",
+      "reuse_grubu": "G5"
+    },
+    "WP-021": {
+      "deliverables": [
+        {
+          "adi": "Backend Dockerfile",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Dockerfile oluşturma, altyapı konfigürasyonu"
+        },
+        {
+          "adi": "Frontend Dockerfile (veya multi-stage build)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Multi-stage Docker build, altyapı konfigürasyonu"
+        },
+        {
+          "adi": "Docker Compose dosyası (local development)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Local dev ortamı konfigürasyonu"
+        },
+        {
+          "adi": "Kubernetes manifest dosyaları (Deployment, Service, Ingress, ConfigMap, Secret)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "K8s manifest dosyaları oluşturma"
+        },
+        {
+          "adi": "Helm chart veya Kustomize yapılandırması",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Helm/Kustomize konfigürasyonu"
+        },
+        {
+          "adi": "Container registry push/pull CI/CD adımları",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "CI/CD pipeline güncelleme"
+        },
+        {
+          "adi": "Health check ve readiness/liveness probe tanımları",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Health endpoint'leri ve K8s probe konfigürasyonu"
+        }
+      ],
+      "baskin_kategori": "SIMPLE_UI",
+      "reuse_grubu": "G3"
+    }
+  },
+  "reuse_gruplari": {
+    "G1": {
+      "wp_listesi": [
+        "WP-002",
+        "WP-003",
+        "WP-004"
+      ],
+      "neden": "Hepsi SIMPLE_UI baskın kategorisinde, mail/bildirim domain'inde, low-medium komşu complexity, deliverable sayıları yakın (3-4)"
+    },
+    "G2": {
+      "wp_listesi": [
+        "WP-006",
+        "WP-007",
+        "WP-008",
+        "WP-009"
+      ],
+      "neden": "Hepsi SIMPLE_UI baskın kategorisinde, sayım süreçleri/iş akışı domain'inde, low-medium komşu complexity, CRUD/form/validasyon/audit pattern'leri ortak"
+    },
+    "G3": {
+      "wp_listesi": [
+        "WP-010",
+        "WP-011",
+        "WP-021"
+      ],
+      "neden": "Hepsi SIMPLE_UI baskın kategorisinde, altyapı/framework modernizasyon domain'inde, high complexity seviyesinde, CI/CD pipeline güncelleme ortak pattern'i"
+    },
+    "G4": {
+      "wp_listesi": [
+        "WP-012",
+        "WP-013",
+        "WP-014"
+      ],
+      "neden": "Hepsi SIMPLE_UI baskın kategorisinde, kod kalitesi/refactoring domain'inde, medium-high komşu complexity, analiz raporu + iyileştirme + CI/CD entegrasyon pattern'leri ortak"
+    },
+    "G5": {
+      "wp_listesi": [
+        "WP-017",
+        "WP-018",
+        "WP-019",
+        "WP-020"
+      ],
+      "neden": "Altyapı/operasyon domain'inde, medium complexity, monitoring/güvenlik/konfigürasyon yönetimi, CI/CD entegrasyon pattern'leri ortak, deliverable sayıları yakın (4-5)"
+    }
+  },
+  "baglam_analizi": {
+    "domain_karmasikligi": "regulasyon",
+    "domain_neden": "Sayım ve denetim uygulaması, düzenleyici kurumlara yönelik denetim/audit süreçlerini yönetiyor. OWASP güvenlik gereksinimleri, SAST/DAST zorunlulukları, SSO entegrasyonu, PII maskeleme gereklilikleri ve audit trail zorunlulukları regulasyona tabi bir yapıyı işaret ediyor. Denetçi/kontrolör atama süreçleri ve şirket bazlı yetkilendirme yapısı düzenleyici uyum (compliance) bağlamında çalışıyor.",
+    "entegrasyon_yogunlugu": "5-7",
+    "benzersiz_entegrasyonlar": [
+      "Microsoft Entra (Azure AD) SSO",
+      "Yeni veri kaynağı sistemi (ServiceNow yerine gelen dış sistem)",
+      "Azure KeyVault",
+      "Mail gönderim altyapısı (TinyEmail vb.)",
+      "Merkezi loglama platformu (ELK/Splunk/Azure Monitor)",
+      "APM platformu (Application Insights/Elastic APM/Datadog)",
+      "SonarQube sunucusu",
+      "SAST/DAST güvenlik test araçları",
+      "Container registry (ACR/Harbor)",
+      "Kubernetes cluster"
+    ],
+    "entegrasyon_neden": "Toplam 10 benzersiz dış sistem/platform tespit edildi. Ancak SonarQube, SAST/DAST, Container Registry ve Kubernetes cluster daha çok DevOps/CI-CD tooling seviyesinde olup doğrudan uygulama runtime entegrasyonu değil. Runtime dış entegrasyonlar: Azure AD SSO, Yeni veri kaynağı, Azure KeyVault, Mail altyapısı, Merkezi loglama, APM = 6 benzersiz dış sistem. Bu 5-7 bandına denk geliyor."
+  },
+  "riskler": [
+    "WP-005: Yeni veri kaynağı sistemi detayları proje başlangıcında netleşecek - analiz bağımlılığı nedeniyle entegrasyon gecikmesi riski yüksek",
+    "WP-010: .NET Core 3.1'den .NET 10'a 4+ major versiyon atlama - kümülatif breaking change riski çok yüksek, NuGet paket uyumsuzlukları cascade etki yaratabilir",
+    "WP-011: React 16→18 yükseltmesinde 3. parti UI kütüphane uyumsuzlukları öngörülemeyen efor artışına neden olabilir",
+    "WP-012: Mevcut kod tabanının teknik borç seviyesi bilinmiyor - refactoring efor tahminleri sapabilir",
+    "WP-014: %70 test artışı hedefi mevcut baseline bilinmeden verilmiş - legacy kodda testability düşükse refactoring gerektirerek WP-012'ye bağımlılık yaratır",
+    "WP-016: SSO geçişi sırasında mevcut kullanıcıların provisioning/mapping stratejisi kritik - yanlış mapping yetkisiz erişime veya erişim kaybına neden olabilir",
+    "WP-015 + WP-017: OWASP ve SAST/DAST bulgularının 2 a/g sınırını aşması durumunda CR yönetimi ve proje kapsamı kayması riski",
+    "WP-021: Kubernetes cluster ve container registry kurum tarafından sağlanacak - altyapı hazırlığında gecikme deploy sürecini bloklar",
+    "WP-013 + WP-017: SonarQube ve SAST/DAST araçları kurum tarafından sağlanacak - araç temin gecikmesi riski",
+    "Genel: ServiceNow entegrasyonu kapsam dışı bırakılmış ancak veri akışı analizi belirsiz - WP-005 ile çakışma potansiyeli"
+  ],
+  "notlar": [
+    "WP-010, WP-011, WP-012, WP-013, WP-014, WP-015, WP-017, WP-018, WP-019, WP-020, WP-021 deliverable'ları klasik UI/backend geliştirmeden ziyade altyapı modernizasyonu, DevOps, güvenlik hardening ve kod kalitesi çalışmalarıdır. SIMPLE_UI kategorisi fallback olarak atanmıştır çünkü bu çalışmalar 8 kategoriden hiçbirine tam oturmamaktadır.",
+    "Admin portalı kapsamında ihtiyaç duyulan geliştirmeler kapsam dışı bırakılmış - WP-001, WP-002 gibi yönetim ekranlarının admin portalındaki karşılıkları belirsiz",
+    "Mail gönderim altyapısı (TinyEmail) entegrasyonu SMTP/mail servisi seviyesinde - 3rd party API entegrasyonu değil, servis katmanı refactoring olarak değerlendirildi",
+    "WP-005'teki senkronizasyon modülleri BACKGROUND_JOB olarak kategorize edildi çünkü periyodik/scheduled sync gerektiriyor",
+    "WP-006'daki state machine implementasyonu RULE_ENGINE olarak değerlendirilmedi çünkü sabit durum geçiş kuralları var, dinamik/configurable kural motoru değil",
+    "Reuse gruplarında G3 (framework yükseltme + containerization) ve G4 (kod kalitesi) grupları teknik altyapı modernizasyonu bağlamında ortak pattern kullanabilir (CI/CD pipeline, test, build)"
+  ],
+  "sorular": [
+    "WP-005: Yeni veri kaynağı sistemi REST mi SOAP mı? Senkronizasyon full sync mi delta sync mi olacak? Bu karar BACKGROUND_JOB complexity'sini doğrudan etkiler.",
+    "WP-010: .NET yükseltmesi kademeli mi (3.1→6→8→10) yapılacak yoksa direkt 10'a mı atlanacak? Kademeli yükseltme ek WP gerektirebilir.",
+    "WP-016: Microsoft Entra single-tenant mı multi-tenant mı konfigüre edilecek? Mevcut kullanıcıların SSO'ya geçiş (provisioning) stratejisi ne olacak?",
+    "WP-018: Merkezi loglama ve APM için hangi platform kullanılacak? (ELK/Splunk/Azure Monitor/Datadog) Platform seçimi entegrasyon eforunu etkiler.",
+    "WP-014: Mevcut birim test coverage oranı nedir? %70 artış mutlak olarak ne anlama geliyor? (Örn: %10'dan %17'ye mi, %30'dan %51'e mi?)",
+    "WP-002: Mail gönderim altyapısında TinyEmail kesinleşmiş mi? Lisans ve kurum politikası onayı var mı?",
+    "WP-021: Helm chart mı Kustomize mı tercih edilecek? Kurum K8s standardı var mı?",
+    "WP-015: OWASP Top 10 değerlendirmesinde mevcut güvenlik açığı seviyesi bilinmediğinden, 2 a/g sınırının aşılması durumunda önceliklendirme kriteri ne olacak?"
+  ]
+}

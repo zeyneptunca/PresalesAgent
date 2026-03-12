@@ -1,0 +1,601 @@
+{
+  "meta": {
+    "role": "WBS_Architect",
+    "version": "1.0",
+    "source_doc": "Çevre Denetim Projesi - Fonksiyonel Geliştirmeler Analiz Dokümanı"
+  },
+  "project_scope_summary": {
+    "project_name": "Çevre Denetim Projesi",
+    "core_objective": "Şirketlerin çevre denetim verilerini sisteme girebilmesi, denetim ekiplerinin bu verileri inceleyip takip edebilmesi, uygunsuzlukların raporlanması ve merkezi yönetim tarafından şirket bazlı analiz yapılabilmesi için web tabanlı bir denetim yönetim platformu geliştirilmesi.",
+    "technical_stack_implications": [
+      "Web tabanlı uygulama (frontend framework gereksinimi)",
+      "Backend API servisleri (RESTful API mimarisi)",
+      "SSO entegrasyonu (kurumsal kimlik doğrulama)",
+      "Veritabanı altyapısı (ilişkisel veritabanı, geçmiş dönem veri saklama)",
+      "CI/CD pipeline ve DevOps altyapısı",
+      "Dış sistem API entegrasyonları (şirket lokasyon verileri, denetim verileri)",
+      "Excel export kütüphanesi",
+      "Rol bazlı yetkilendirme (RBAC) mekanizması"
+    ],
+    "out_of_scope_items": [
+      "Mobil uygulama geliştirme (native veya mobil uyumluluk)",
+      "Karmaşık ağırlıklı skor hesaplamaları",
+      "Dinamik formüller ve şirket özel varyasyonlar",
+      "Dinamik soru tipleri",
+      "İleri düzey raporlama, pivot tablolar veya grafik çeşitliliği"
+    ]
+  },
+  "wbs": {
+    "modules": [
+      {
+        "module_id": "MOD-001",
+        "name": "Proje Altyapısı ve DevOps Kurulumu",
+        "description": "Projenin teknik altyapısının oluşturulması, CI/CD pipeline kurulumu, geliştirme ortamlarının hazırlanması ve temel uygulama iskeletinin oluşturulması.",
+        "work_packages": [
+          {
+            "wp_id": "WP-001",
+            "name": "Proje İskeleti ve Geliştirme Ortamı Kurulumu",
+            "description": "Frontend ve backend proje iskeletlerinin oluşturulması, geliştirme, test ve üretim ortamlarının hazırlanması, CI/CD pipeline yapılandırması.",
+            "deliverables": [
+              "Frontend proje iskeleti (build, lint, test yapılandırması dahil)",
+              "Backend proje iskeleti (API framework, ORM, loglama yapılandırması dahil)",
+              "CI/CD pipeline tanımları (build, test, deploy aşamaları)",
+              "Ortam konfigürasyonları (dev, test, prod)",
+              "Veritabanı migration altyapısı"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Web tabanlı SPA framework kurulumu, build ve bundle yapılandırması, environment-based konfigürasyon yönetimi.",
+              "backend_requirements": "API framework kurulumu, ORM yapılandırması, loglama ve hata yönetimi mekanizması, environment konfigürasyon yönetimi.",
+              "integration_points": [
+                "CI/CD araçları (build, test, deploy otomasyonu)",
+                "Veritabanı sunucusu bağlantısı"
+              ],
+              "data_implications": "Veritabanı şeması migration stratejisi belirlenmeli, başlangıç şeması oluşturulmalı."
+            },
+            "complexity": {
+              "level": "medium",
+              "drivers": [
+                "Multi-environment konfigürasyon yönetimi",
+                "CI/CD pipeline stage tanımları ve otomasyonu",
+                "Frontend ve backend projelerinin tutarlı build/deploy süreçleri"
+              ]
+            },
+            "acceptance_criteria": [
+              "Frontend ve backend projeleri başarılı şekilde build edilerek çalıştırılabilir olmalı.",
+              "CI/CD pipeline üzerinden otomatik build ve deploy tetiklenebilir olmalı.",
+              "Dev, test ve prod ortamları ayrı konfigürasyonlarla erişilebilir olmalı.",
+              "Veritabanı migration scripti başarılı şekilde çalıştırılabilir olmalı."
+            ]
+          }
+        ]
+      },
+      {
+        "module_id": "MOD-002",
+        "name": "Kimlik Doğrulama ve Yetkilendirme",
+        "description": "SSO entegrasyonu ile kullanıcı kimlik doğrulaması, rol bazlı erişim kontrolü (RBAC) mekanizmasının kurulması ve şirket bazlı veri izolasyonunun sağlanması.",
+        "work_packages": [
+          {
+            "wp_id": "WP-002",
+            "name": "SSO Entegrasyonu ve Oturum Yönetimi",
+            "description": "Kurumsal SSO altyapısı ile entegrasyon yapılması, token bazlı oturum yönetimi, kullanıcı giriş/çıkış akışlarının implementasyonu.",
+            "deliverables": [
+              "SSO entegrasyon modülü (SAML/OAuth2 protokol desteği)",
+              "Token yönetimi servisi (access token, refresh token mekanizması)",
+              "Kullanıcı giriş ve çıkış ekranları/akışları",
+              "Oturum süre aşımı ve yenileme mekanizması"
+            ],
+            "technical_context": {
+              "frontend_requirements": "SSO login redirect akışı, token saklama ve yönetimi (secure storage), oturum durumu kontrolü, unauthorized durumda yönlendirme.",
+              "backend_requirements": "SSO identity provider ile entegrasyon servisi, token doğrulama middleware, oturum yönetimi API endpointleri.",
+              "integration_points": [
+                "Kurumsal SSO Identity Provider (SAML/OAuth2)",
+                "Kullanıcı dizin servisi (Active Directory veya benzeri)"
+              ],
+              "data_implications": "Kullanıcı oturum bilgileri, SSO'dan dönen kullanıcı profil bilgilerinin lokal veritabanına eşlenmesi."
+            },
+            "complexity": {
+              "level": "high",
+              "drivers": [
+                "Kurumsal SSO protokol entegrasyonu (SAML/OAuth2 handshake)",
+                "Token lifecycle management (issue, validate, refresh, revoke)",
+                "SSO provider ile identity mapping ve claim yönetimi",
+                "Güvenlik gereksinimleri (XSS koruması, secure cookie, HTTPS zorunluluğu)"
+              ]
+            },
+            "acceptance_criteria": [
+              "Kullanıcılar SSO üzerinden başarılı şekilde giriş yapabilmeli.",
+              "Geçersiz veya süresi dolmuş token ile API çağrısı yapıldığında 401 hatası dönmeli.",
+              "Oturum süre aşımında kullanıcı SSO login sayfasına yönlendirilmeli.",
+              "Çıkış yapıldığında oturum tamamen sonlandırılmalı."
+            ]
+          },
+          {
+            "wp_id": "WP-003",
+            "name": "Rol Bazlı Yetkilendirme (RBAC) ve Veri İzolasyonu",
+            "description": "Merkezi Yönetim, Şirket Kullanıcısı (Çevre Mühendisi) ve Denetim Ekibi rolleri için erişim kontrol mekanizmasının kurulması; şirket bazlı veri izolasyonunun sağlanması.",
+            "deliverables": [
+              "Rol tanımlama ve yönetim modülü (Merkezi Yönetim, Şirket Kullanıcısı, Denetim Ekibi)",
+              "API seviyesinde yetkilendirme middleware/guard mekanizması",
+              "Frontend seviyesinde rol bazlı menü ve ekran erişim kontrolü",
+              "Şirket bazlı veri izolasyonu filtresi (data-level security)",
+              "Topluluk kullanıcısı için tüm verilere erişim mekanizması"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Rol bazlı route guard mekanizması, dinamik menü ve UI element gösterim/gizleme, yetkisiz erişim denemelerinde uyarı ve yönlendirme.",
+              "backend_requirements": "RBAC middleware implementasyonu, her API endpointinde rol kontrolü, veritabanı sorgularında şirket bazlı filtreleme (tenant isolation), policy-based authorization.",
+              "integration_points": [
+                "SSO modülünden gelen kullanıcı rolü ve şirket bilgisi",
+                "Tüm diğer modüllerin API katmanı (cross-cutting concern)"
+              ],
+              "data_implications": "Kullanıcı-rol-şirket ilişkisi tabloları, her veri sorgusunda şirket filtresi uygulanması (multi-tenant data isolation), topluluk kullanıcı için filtre bypass mekanizması."
+            },
+            "complexity": {
+              "level": "high",
+              "drivers": [
+                "Multi-tenant veri izolasyonu (row-level security veya query-level filtering)",
+                "Cross-cutting concern olarak tüm modüllere entegrasyon",
+                "Üç farklı rol profili ve her biri için farklı veri erişim kapsamı",
+                "Topluluk kullanıcısı vs. şirket kullanıcısı ayrımının tüm veri katmanında tutarlı uygulanması"
+              ]
+            },
+            "acceptance_criteria": [
+              "Şirket kullanıcısı yalnızca kendi şirketine ait verileri görebilmeli.",
+              "Topluluk (merkezi yönetim) kullanıcısı tüm şirketlerin verilerini görüntüleyebilmeli.",
+              "Denetim ekibi yalnızca denetim inceleme ve takip işlemlerine erişebilmeli.",
+              "Yetkisiz erişim denemeleri API seviyesinde 403 hatası ile engellenip loglanmalı.",
+              "Frontend'de kullanıcının rolüne uygun menü ve işlevler görüntülenmeli."
+            ]
+          }
+        ]
+      },
+      {
+        "module_id": "MOD-003",
+        "name": "Merkezi Tanımlama ve Konfigürasyon Yönetimi",
+        "description": "Denetim sorularının, hesaplama modülünün, kontrol listelerinin ve aktif denetim dönemlerinin merkezi olarak tanımlanması ve yönetilmesi.",
+        "work_packages": [
+          {
+            "wp_id": "WP-004",
+            "name": "Denetim Soru Seti Tanımlama Modülü",
+            "description": "Merkezi yönetim tarafından denetim sorularının oluşturulması, düzenlenmesi ve yönetilmesi; sabit soru tiplerinin tanımlanması.",
+            "deliverables": [
+              "Denetim sorusu oluşturma/düzenleme/silme ekranları",
+              "Soru kategorilendirme ve gruplama yapısı",
+              "Soru seti versiyon yönetimi (döneme bağlı soru seti atama)",
+              "Soru seti listeleme ve arama ekranı",
+              "Soru seti CRUD API endpointleri"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Soru oluşturma formu (sabit soru tipleri), soru listesi (arama, filtreleme), soru gruplama arayüzü, drag-drop veya sıralama desteği.",
+              "backend_requirements": "Soru seti CRUD servisleri, soru-kategori ilişkisi yönetimi, soru seti versiyon/dönem bağlantısı, validasyon kuralları.",
+              "integration_points": [
+                "Aktif dönem yönetimi modülü (soru setinin döneme atanması)",
+                "Veri giriş modülü (soru setinin şirketlere sunulması)"
+              ],
+              "data_implications": "Denetim soruları tablosu, soru kategorileri, soru-dönem ilişkisi, soru seti versiyonlama için şema tasarımı."
+            },
+            "complexity": {
+              "level": "medium",
+              "drivers": [
+                "Soru seti versiyonlama ve döneme bağlama mekanizması",
+                "Soru kategorilendirme ve gruplama yapısının esnek tasarımı",
+                "Birden fazla sabit soru tipinin desteklenmesi"
+              ]
+            },
+            "acceptance_criteria": [
+              "Merkezi yönetim kullanıcısı yeni soru oluşturabilmeli, mevcut soruyu düzenleyebilmeli ve silebilmeli.",
+              "Sorular kategorilere ayrılabilmeli ve gruplandırılabilmeli.",
+              "Soru seti bir denetim dönemine atanabilmeli.",
+              "Soru listesinde arama ve filtreleme yapılabilmeli."
+            ]
+          },
+          {
+            "wp_id": "WP-005",
+            "name": "Hesaplama Modülü Tanımlama",
+            "description": "Denetim verileri üzerinde uygulanacak temel hesaplama kurallarının merkezi olarak tanımlanması ve yönetilmesi.",
+            "deliverables": [
+              "Temel hesaplama kuralı tanımlama ekranı",
+              "Hesaplama kuralı CRUD API endpointleri",
+              "Hesaplama kurallarının soru setleri ile ilişkilendirilmesi",
+              "Hesaplama sonuçlarının önizleme mekanizması"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Hesaplama kuralı tanımlama formu, kural-soru ilişkilendirme arayüzü, hesaplama önizleme ekranı.",
+              "backend_requirements": "Hesaplama kuralı CRUD servisleri, temel hesaplama motoru (toplama, ortalama vb. basit operasyonlar), kural-soru bağlantı servisi, hesaplama validasyonu.",
+              "integration_points": [
+                "Denetim soru seti modülü (soru bazlı hesaplama bağlantısı)",
+                "Veri giriş modülü (girilen veriler üzerinde hesaplama çalıştırma)"
+              ],
+              "data_implications": "Hesaplama kuralları tablosu, kural-soru ilişki tablosu, hesaplama sonuçları için veri yapısı."
+            },
+            "complexity": {
+              "level": "medium",
+              "drivers": [
+                "Hesaplama motoru tasarımı (rule engine benzeri yapı)",
+                "Hesaplama kurallarının soru setleri ile dinamik ilişkilendirilmesi",
+                "Hesaplama sonuçlarının doğruluğunun validasyonu"
+              ]
+            },
+            "acceptance_criteria": [
+              "Merkezi yönetim temel hesaplama kurallarını tanımlayabilmeli.",
+              "Hesaplama kuralları denetim soruları ile ilişkilendirilebilmeli.",
+              "Tanımlanan hesaplamaların önizlemesi yapılabilmeli.",
+              "Sadece temel hesaplamalar (toplam, ortalama vb.) desteklenmeli; karmaşık/dinamik formüller kapsam dışı."
+            ]
+          },
+          {
+            "wp_id": "WP-006",
+            "name": "Kontrol Listesi Tanımlama Modülü",
+            "description": "Denetim süreçlerinde kullanılacak kontrol listelerinin merkezi olarak oluşturulması ve yönetilmesi.",
+            "deliverables": [
+              "Kontrol listesi oluşturma/düzenleme/silme ekranları",
+              "Kontrol listesi maddelerinin tanımlanması arayüzü",
+              "Kontrol listesi CRUD API endpointleri",
+              "Kontrol listesi listeleme ve arama ekranı"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Kontrol listesi oluşturma formu, madde ekleme/çıkarma/sıralama arayüzü, liste yönetim ekranı.",
+              "backend_requirements": "Kontrol listesi CRUD servisleri, madde yönetim servisi, kontrol listesi-dönem ilişki yönetimi.",
+              "integration_points": [
+                "Aktif dönem yönetimi modülü (kontrol listesinin döneme atanması)",
+                "Veri giriş modülü (şirketlerin kontrol listesini doldurması)"
+              ],
+              "data_implications": "Kontrol listeleri tablosu, kontrol listesi maddeleri tablosu, madde sıralama ve durum bilgisi."
+            },
+            "complexity": {
+              "level": "low",
+              "drivers": [
+                "Standart CRUD operasyonları",
+                "Madde sıralama ve yönetim mantığı"
+              ]
+            },
+            "acceptance_criteria": [
+              "Merkezi yönetim kontrol listesi oluşturabilmeli ve düzenleyebilmeli.",
+              "Kontrol listesine madde eklenebilmeli, çıkarılabilmeli ve sıralanabilmeli.",
+              "Kontrol listeleri aranabilir ve listelenebilir olmalı."
+            ]
+          },
+          {
+            "wp_id": "WP-007",
+            "name": "Aktif Denetim Dönemi Yönetimi",
+            "description": "Denetimlerin periyodik olarak yürütülebilmesi için aktif dönem tanımlama, dönem açma/kapama ve dönem bazlı veri giriş kontrolü mekanizması.",
+            "deliverables": [
+              "Denetim dönemi oluşturma/düzenleme ekranı",
+              "Dönem aktif/pasif durum yönetimi",
+              "Dönem bazlı soru seti ve kontrol listesi atama mekanizması",
+              "Dönem CRUD API endpointleri",
+              "Dönem listesi ve geçmiş dönem görüntüleme ekranı"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Dönem oluşturma formu (başlangıç/bitiş tarihi, periyot bilgisi), dönem durum yönetim arayüzü, dönem bazlı soru seti/kontrol listesi atama ekranı.",
+              "backend_requirements": "Dönem CRUD servisleri, dönem durum makinesi (aktif/pasif geçişleri), dönem bazlı veri giriş izin kontrolü middleware, dönem-soru seti/kontrol listesi ilişki yönetimi.",
+              "integration_points": [
+                "Denetim soru seti modülü (döneme soru seti atama)",
+                "Kontrol listesi modülü (döneme kontrol listesi atama)",
+                "Veri giriş modülü (aktif dönem kontrolü)"
+              ],
+              "data_implications": "Denetim dönemleri tablosu, dönem-soru seti ilişki tablosu, dönem-kontrol listesi ilişki tablosu, dönem durum geçiş logları."
+            },
+            "complexity": {
+              "level": "medium",
+              "drivers": [
+                "Dönem durum makinesi (state management) ve iş kuralları",
+                "Aktif dönem kontrolünün veri giriş modülü ile entegrasyonu",
+                "Geçmiş dönem verilerinin korunarak yeni dönem açılması"
+              ]
+            },
+            "acceptance_criteria": [
+              "Merkezi yönetim yeni denetim dönemi oluşturabilmeli.",
+              "Dönem aktif/pasif yapılabilmeli; pasif dönemde veri girişi engellenebilmeli.",
+              "Bir döneme soru seti ve kontrol listesi atanabilmeli.",
+              "Geçmiş dönemler listelenebilmeli ve görüntülenebilmeli."
+            ]
+          }
+        ]
+      },
+      {
+        "module_id": "MOD-004",
+        "name": "Şirket ve Lokasyon Yönetimi",
+        "description": "Sisteme dahil olan şirketlerin ve lokasyonlarının yönetilmesi; manuel tanımlama veya dış sistemlerden entegrasyon ile alınması.",
+        "work_packages": [
+          {
+            "wp_id": "WP-008",
+            "name": "Şirket ve Lokasyon Tanımlama Modülü",
+            "description": "Şirketlerin ve lokasyonlarının sisteme manuel olarak tanımlanabilmesi veya dış sistemlerden entegrasyon ile otomatik olarak alınabilmesi.",
+            "deliverables": [
+              "Şirket oluşturma/düzenleme/listeleme ekranları",
+              "Lokasyon oluşturma/düzenleme/listeleme ekranları (şirket altında)",
+              "Şirket ve lokasyon CRUD API endpointleri",
+              "Dış sistem entegrasyonu ile şirket/lokasyon verisinin çekilmesi servisi",
+              "Şirket-kullanıcı eşleştirme mekanizması"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Şirket yönetim ekranı (CRUD formları), lokasyon yönetim ekranı (şirket altında hiyerarşik yapı), entegrasyon tetikleme arayüzü, şirket-kullanıcı eşleştirme ekranı.",
+              "backend_requirements": "Şirket ve lokasyon CRUD servisleri, dış sistem API entegrasyonu (REST/SOAP), entegrasyon senkronizasyon servisi, şirket-kullanıcı ilişki yönetimi, veri doğrulama ve çakışma yönetimi.",
+              "integration_points": [
+                "Dış şirket/lokasyon veri kaynağı API'si",
+                "Yetkilendirme modülü (şirket-kullanıcı eşleştirmesi)"
+              ],
+              "data_implications": "Şirketler tablosu, lokasyonlar tablosu (şirket foreign key), şirket-kullanıcı ilişki tablosu, entegrasyon senkronizasyon log tablosu."
+            },
+            "complexity": {
+              "level": "medium",
+              "drivers": [
+                "Dış sistem entegrasyonu (API bağlantısı, veri dönüşümü, hata yönetimi)",
+                "Manuel ve otomatik (entegrasyon) veri girişinin birlikte çalışması",
+                "Şirket-lokasyon hiyerarşik veri yapısı",
+                "Entegrasyon sırasında veri çakışması ve tutarlılık yönetimi"
+              ]
+            },
+            "acceptance_criteria": [
+              "Merkezi yönetim şirket ve lokasyon manuel olarak tanımlayabilmeli.",
+              "Dış sistemden şirket/lokasyon verisi entegrasyon ile çekilebilmeli.",
+              "Şirketlere kullanıcı atanabilmeli.",
+              "Lokasyonlar şirket altında hiyerarşik olarak listelenebilmeli.",
+              "Entegrasyon hataları loglanmalı ve kullanıcıya bildirilmeli."
+            ]
+          }
+        ]
+      },
+      {
+        "module_id": "MOD-005",
+        "name": "Veri Giriş Modülü",
+        "description": "Şirketlerin çevre denetim verilerini aktif dönem kapsamında sisteme girebilmesi, kontrol listelerini doldurabilmesi ve doküman yükleyebilmesi.",
+        "work_packages": [
+          {
+            "wp_id": "WP-009",
+            "name": "Denetim Veri Giriş Ekranları",
+            "description": "Şirket kullanıcılarının aktif denetim dönemindeki soru setini cevaplaması, kontrol listelerini doldurması ve denetim verilerini sisteme girmesi.",
+            "deliverables": [
+              "Soru bazlı veri giriş formu (aktif dönem soru setine göre dinamik)",
+              "Kontrol listesi doldurma ekranı",
+              "Veri giriş durumu takip ekranı (tamamlanma yüzdesi, eksik alanlar)",
+              "Veri giriş kaydetme ve taslak olarak saklama mekanizması",
+              "Veri giriş API endpointleri (kaydet, güncelle, taslak)"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Dinamik form render (aktif dönemin soru setine göre), form validasyonu, taslak kaydetme mekanizması, ilerleme göstergesi, kontrol listesi checkbox/madde tamamlama arayüzü.",
+              "backend_requirements": "Veri giriş CRUD servisleri, taslak kaydetme servisi, aktif dönem ve soru seti doğrulama, şirket bazlı veri izolasyonu kontrolü, hesaplama modülünün veri girişi sonrası tetiklenmesi.",
+              "integration_points": [
+                "Aktif dönem yönetimi modülü (dönem kontrolü)",
+                "Denetim soru seti modülü (soru setinin çekilmesi)",
+                "Kontrol listesi modülü (kontrol listesinin çekilmesi)",
+                "Hesaplama modülü (girilen veriler üzerinde hesaplama)",
+                "Yetkilendirme modülü (şirket bazlı veri izolasyonu)"
+              ],
+              "data_implications": "Denetim yanıtları tablosu (şirket, dönem, soru, cevap ilişkisi), kontrol listesi doldurma durumu tablosu, taslak veri saklama mekanizması."
+            },
+            "complexity": {
+              "level": "high",
+              "drivers": [
+                "Dönem bazlı dinamik form oluşturma (soru setine göre render)",
+                "Taslak ve nihai kaydetme iş akışı",
+                "Hesaplama modülü ile otomatik tetikleme entegrasyonu",
+                "Multi-tenant veri izolasyonunun form seviyesinde uygulanması",
+                "Birden fazla modül ile entegrasyon gereksinimleri"
+              ]
+            },
+            "acceptance_criteria": [
+              "Şirket kullanıcısı aktif döneme ait soru setini görebilmeli ve cevaplayabilmeli.",
+              "Kontrol listesi doldurulabilmeli.",
+              "Veri girişi taslak olarak kaydedilebilmeli ve daha sonra tamamlanabilmeli.",
+              "Tamamlanma durumu (yüzde, eksik alanlar) görüntülenebilmeli.",
+              "Pasif dönemde veri girişi engellenebilmeli.",
+              "Şirket kullanıcısı yalnızca kendi şirketinin veri girişini yapabilmeli."
+            ]
+          },
+          {
+            "wp_id": "WP-010",
+            "name": "Doküman Yükleme Modülü",
+            "description": "Şirket kullanıcılarının denetim sürecinde gerekli dokümanları sisteme yükleyebilmesi ve yönetebilmesi.",
+            "deliverables": [
+              "Doküman yükleme arayüzü (drag-drop veya dosya seçici)",
+              "Yüklenen dokümanların listelenmesi ve indirilmesi ekranı",
+              "Doküman yükleme/indirme/silme API endpointleri",
+              "Dosya tipi ve boyut validasyonu",
+              "Dokümanların denetim verisi ile ilişkilendirilmesi"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Dosya yükleme komponenti (drag-drop desteği), dosya tipi ve boyut kontrolü (client-side), yükleme ilerleme göstergesi, doküman listesi ve indirme butonu.",
+              "backend_requirements": "Dosya yükleme servisi (multipart upload), dosya depolama yönetimi (file storage veya object storage), dosya tipi ve boyut validasyonu (server-side), doküman-denetim verisi ilişki yönetimi, dosya indirme servisi.",
+              "integration_points": [
+                "Veri giriş modülü (dokümanın denetim verisine bağlanması)",
+                "Dosya depolama sistemi (file system veya object storage)"
+              ],
+              "data_implications": "Doküman metadata tablosu (dosya adı, tipi, boyutu, yükleme tarihi, ilişkili denetim verisi), dosya depolama dizin yapısı."
+            },
+            "complexity": {
+              "level": "medium",
+              "drivers": [
+                "Dosya depolama stratejisi (file system vs object storage)",
+                "Dosya boyutu ve tip validasyonu (client ve server tarafında)",
+                "Doküman-denetim verisi ilişkilendirme mekanizması",
+                "Büyük dosya yükleme performansı"
+              ]
+            },
+            "acceptance_criteria": [
+              "Şirket kullanıcısı doküman yükleyebilmeli.",
+              "Desteklenmeyen dosya tipleri ve boyut aşımında uyarı verilmeli.",
+              "Yüklenen dokümanlar listelenebilmeli ve indirilebilmeli.",
+              "Dokümanlar ilgili denetim verisi ile ilişkilendirilebilmeli.",
+              "Yetkisiz kullanıcılar başka şirketlerin dokümanlarına erişememeli."
+            ]
+          }
+        ]
+      },
+      {
+        "module_id": "MOD-006",
+        "name": "Denetim Takip ve İnceleme Modülü",
+        "description": "Denetim ekiplerinin girilen verileri incelemesi, uygunsuzlukları tespit etmesi, aksiyonları tanımlaması ve takip etmesi.",
+        "work_packages": [
+          {
+            "wp_id": "WP-011",
+            "name": "Veri İnceleme ve Değerlendirme Ekranları",
+            "description": "Denetim ekiplerinin şirketlerin girdiği verileri inceleyebilmesi, dönem bazlı veri takibi yapabilmesi ve değerlendirme notları ekleyebilmesi.",
+            "deliverables": [
+              "Şirket bazlı veri inceleme ekranı (soru cevapları, hesaplama sonuçları, kontrol listesi durumu)",
+              "Dönem bazlı veri karşılaştırma görünümü",
+              "Denetim ekibi değerlendirme notu ekleme/düzenleme alanı",
+              "Veri inceleme API endpointleri",
+              "Geçmiş dönem verileri görüntüleme ekranı"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Şirket seçimi ve detay görünümü, soru-cevap tablosu, hesaplama sonuçları özeti, kontrol listesi tamamlanma durumu, değerlendirme notu metin alanı, geçmiş dönem veri görüntüleme.",
+              "backend_requirements": "Veri inceleme sorgulama servisleri (şirket, dönem bazlı filtreleme), değerlendirme notu CRUD servisleri, geçmiş dönem verileri sorgulama servisi, hesaplama sonuçları sorgulama servisi.",
+              "integration_points": [
+                "Veri giriş modülü (girilen verilerin okunması)",
+                "Hesaplama modülü (hesaplama sonuçlarının gösterimi)",
+                "Yetkilendirme modülü (denetim ekibi erişim kontrolü)"
+              ],
+              "data_implications": "Değerlendirme notları tablosu, geçmiş dönem verilerinin arşiv stratejisi, sorgu performansı için indeksleme gereksinimi."
+            },
+            "complexity": {
+              "level": "medium",
+              "drivers": [
+                "Birden fazla veri kaynağının (cevaplar, hesaplamalar, kontrol listesi) tek ekranda birleştirilmesi",
+                "Geçmiş dönem verilerine erişim ve karşılaştırma",
+                "Büyük veri setlerinde sorgu performansı optimizasyonu"
+              ]
+            },
+            "acceptance_criteria": [
+              "Denetim ekibi şirket bazlı veri incelemesi yapabilmeli.",
+              "Soru cevapları, hesaplama sonuçları ve kontrol listesi durumu tek ekranda görüntülenebilmeli.",
+              "Denetim ekibi değerlendirme notu ekleyebilmeli ve düzenleyebilmeli.",
+              "Geçmiş dönem verileri görüntülenebilmeli."
+            ]
+          },
+          {
+            "wp_id": "WP-012",
+            "name": "Uygunsuzluk ve Aksiyon Yönetimi",
+            "description": "Denetim sürecinde tespit edilen uygunsuzlukların kaydedilmesi, aksiyonların tanımlanması ve takip edilmesi.",
+            "deliverables": [
+              "Uygunsuzluk kayıt oluşturma/düzenleme ekranı",
+              "Aksiyon tanımlama ve atama ekranı",
+              "Uygunsuzluk ve aksiyon durumu takip listesi",
+              "Uygunsuzluk ve aksiyon CRUD API endpointleri",
+              "Uygunsuzluk-denetim verisi ilişkilendirme mekanizması"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Uygunsuzluk kayıt formu (açıklama, şiddet, ilgili soru/madde referansı), aksiyon tanımlama formu (sorumlu, termin, açıklama), durum takip listesi (filtreleme, sıralama), durum geçişi arayüzü.",
+              "backend_requirements": "Uygunsuzluk CRUD servisleri, aksiyon CRUD servisleri, durum makinesi (açık, devam eden, kapatıldı vb.), uygunsuzluk-denetim verisi/soru ilişkilendirme servisi, aksiyon atama ve bildirim servisi.",
+              "integration_points": [
+                "Veri inceleme modülü (inceleme sırasında uygunsuzluk oluşturma)",
+                "Denetim soru seti modülü (uygunsuzluğun ilgili soruya bağlanması)",
+                "Raporlama modülü (uygunsuzluk istatistikleri)"
+              ],
+              "data_implications": "Uygunsuzluklar tablosu, aksiyonlar tablosu, uygunsuzluk-denetim verisi ilişki tablosu, durum geçiş logları."
+            },
+            "complexity": {
+              "level": "high",
+              "drivers": [
+                "Uygunsuzluk-aksiyon durum makinesi (state transitions ve iş kuralları)",
+                "Çoklu ilişkilendirme (uygunsuzluk-soru, uygunsuzluk-aksiyon, aksiyon-sorumlu)",
+                "Aksiyon takip iş akışı ve durum geçişleri",
+                "Raporlama modülüne veri sağlama gereksinimleri"
+              ]
+            },
+            "acceptance_criteria": [
+              "Denetim ekibi uygunsuzluk kaydı oluşturabilmeli.",
+              "Uygunsuzluğa aksiyon tanımlanabilmeli ve sorumlu atanabilmeli.",
+              "Uygunsuzluk ve aksiyon durumu güncellenebilmeli (açık, devam eden, kapatıldı).",
+              "Uygunsuzluklar ilgili denetim verisi/sorusu ile ilişkilendirilebilmeli.",
+              "Uygunsuzluk ve aksiyon listesi filtrelenebilmeli ve sıralanabilmeli."
+            ]
+          }
+        ]
+      },
+      {
+        "module_id": "MOD-007",
+        "name": "Raporlama ve Dashboard Modülü",
+        "description": "Şirket bazlı denetim verilerinin analiz edilebilmesi, temel dashboard ve raporlama fonksiyonlarının sunulması, verilerin filtrelenmesi ve dışa aktarılması.",
+        "work_packages": [
+          {
+            "wp_id": "WP-013",
+            "name": "Dashboard Geliştirme",
+            "description": "Denetim verilerinin şirket bazlı özet görünümü, temel metriklerin gösterimi ve genel durum takibi için dashboard ekranının geliştirilmesi.",
+            "deliverables": [
+              "Ana dashboard ekranı (özet metrikler, şirket bazlı durum kartları)",
+              "Şirket bazlı filtreleme mekanizması",
+              "Dönem bazlı filtreleme mekanizması",
+              "Temel metrik kartları (tamamlanma oranı, uygunsuzluk sayısı, aksiyon durumu dağılımı vb.)",
+              "Dashboard veri API endpointleri (aggregate sorgular)"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Dashboard layout tasarımı, metrik kartları (KPI göstergeleri), temel filtre komponenti (şirket, dönem), veri yenileme mekanizması, responsive web tasarımı.",
+              "backend_requirements": "Dashboard aggregate sorgu servisleri, şirket ve dönem bazlı filtreleme, performanslı aggregate query tasarımı, rol bazlı dashboard veri filtreleme (şirket kullanıcısı vs topluluk).",
+              "integration_points": [
+                "Veri giriş modülü (tamamlanma verileri)",
+                "Uygunsuzluk ve aksiyon modülü (uygunsuzluk/aksiyon istatistikleri)",
+                "Yetkilendirme modülü (şirket bazlı veri filtreleme)"
+              ],
+              "data_implications": "Aggregate sorgu performansı için materialized view veya caching stratejisi, büyük veri setlerinde sorgu optimizasyonu."
+            },
+            "complexity": {
+              "level": "medium",
+              "drivers": [
+                "Birden fazla veri kaynağından aggregate sorgu tasarımı",
+                "Rol bazlı veri filtreleme (şirket kullanıcısı kendi verisini, topluluk tüm veriyi görmeli)",
+                "Dashboard performans optimizasyonu (caching veya materialized view)",
+                "Temel KPI metriklerinin doğru hesaplanması"
+              ]
+            },
+            "acceptance_criteria": [
+              "Dashboard ekranında temel metrikler (tamamlanma oranı, uygunsuzluk sayısı, aksiyon durumu) görüntülenebilmeli.",
+              "Şirket bazlı ve dönem bazlı filtreleme yapılabilmeli.",
+              "Şirket kullanıcısı yalnızca kendi şirket verilerini, topluluk kullanıcısı tüm verileri görebilmeli.",
+              "Dashboard verileri makul sürede yüklenebilmeli."
+            ]
+          },
+          {
+            "wp_id": "WP-014",
+            "name": "Raporlama ve Veri Dışa Aktarım",
+            "description": "Denetim verilerinin filtrelenerek raporlanabilmesi ve Excel formatında dışa aktarılabilmesi.",
+            "deliverables": [
+              "Raporlama ekranı (şirket, dönem, durum bazlı filtreleme)",
+              "Filtrelenmiş veri tablosu görünümü",
+              "Excel dışa aktarım fonksiyonu",
+              "Raporlama ve export API endpointleri",
+              "Uygunsuzluk raporu görünümü"
+            ],
+            "technical_context": {
+              "frontend_requirements": "Gelişmiş filtreleme paneli (şirket, dönem, durum, uygunsuzluk tipi), veri tablosu (sayfalama, sıralama), Excel export butonu ve indirme mekanizması, rapor sonuçlarının tablo formatında gösterimi.",
+              "backend_requirements": "Raporlama sorgu servisleri (çoklu filtre desteği), Excel dosyası oluşturma servisi (server-side Excel generation), büyük veri setleri için sayfalama ve streaming export, rapor verisi aggregate servisleri.",
+              "integration_points": [
+                "Veri giriş modülü (denetim verileri)",
+                "Uygunsuzluk ve aksiyon modülü (uygunsuzluk verileri)",
+                "Yetkilendirme modülü (şirket bazlı veri filtreleme)"
+              ],
+              "data_implications": "Büyük veri setlerinde Excel export performansı, sayfalama stratejisi, filtreleme için veritabanı indeksleme gereksinimleri."
+            },
+            "complexity": {
+              "level": "medium",
+              "drivers": [
+                "Çoklu filtre kombinasyonlarının sorgu performansına etkisi",
+                "Server-side Excel dosya oluşturma (büyük veri setlerinde memory yönetimi)",
+                "Farklı rapor görünümlerinin tasarımı",
+                "Streaming export mekanizması (büyük veri setleri için)"
+              ]
+            },
+            "acceptance_criteria": [
+              "Kullanıcı şirket, dönem ve durum bazlı filtreleme yapabilmeli.",
+              "Filtrelenmiş veriler tablo formatında görüntülenebilmeli.",
+              "Veriler Excel formatında dışa aktarılabilmeli.",
+              "Uygunsuzluk raporu ayrı bir görünüm olarak sunulabilmeli.",
+              "Şirket kullanıcısı yalnızca kendi verilerini, topluluk kullanıcısı tüm verileri raporlayabilmeli."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "architect_notes": [
+    "SSO entegrasyonu projenin kritik bağımlılıklarından biridir; kurumsal SSO provider bilgileri ve protokol detayları (SAML/OAuth2) proje başlangıcında netleştirilmelidir.",
+    "Multi-tenant veri izolasyonu (şirket bazlı veri ayrımı) tüm modülleri etkileyen cross-cutting bir concern olup, veritabanı şeması tasarımında en baştan dikkate alınmalıdır.",
+    "Dış sistem entegrasyonu (şirket/lokasyon verileri) için API kontratları ve erişim bilgileri proje başlangıcında temin edilmelidir; gecikme durumunda projenin etkileneceği kısıtlarda belirtilmiştir.",
+    "Hesaplama modülü şu an temel operasyonlar (toplam, ortalama vb.) ile sınırlıdır; ancak ileriye dönük genişletilebilirlik düşünülerek rule engine benzeri bir yapıda tasarlanması önerilir.",
+    "Geçmiş dönem verilerinin saklanması ve görüntülenmesi için veri arşivleme stratejisi belirlenmelidir; büyüyen veri hacminde sorgu performansı olumsuz etkilenebilir.",
+    "Excel export fonksiyonu büyük veri setlerinde bellek sorunlarına yol açabileceğinden, streaming export veya asenkron dosya oluşturma stratejisi tercih edilmelidir.",
+    "Dashboard aggregate sorguları yoğun veritabanı yüküne neden olabileceğinden, caching veya materialized view stratejisi planlanmalıdır.",
+    "Proje kapsamı MVP odaklıdır; ileri düzey raporlama (pivot, grafik çeşitliliği), dinamik formüller ve mobil uyumluluk ileriki fazlara bırakılmıştır.",
+    "Doküman yükleme için dosya depolama stratejisi (sunucu dosya sistemi vs. object storage) proje altyapı kararları sırasında belirlenmelidir."
+  ]
+}

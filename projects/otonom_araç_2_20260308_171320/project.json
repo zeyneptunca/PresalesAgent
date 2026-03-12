@@ -1,0 +1,189 @@
+{
+  "project_id": "otonom_araç_2_20260308_171320",
+  "project_name": "Otonom Araç 2",
+  "project_description": "Otonom Araç 2",
+  "created_at": "2026-03-08T17:13:20.718431",
+  "updated_at": "2026-03-08T22:39:07.905697",
+  "scope": {
+    "pdf_filename": "Otokar_RemoteCommand&Assistance1.pdf",
+    "pdf_pages": 28,
+    "pdf_words": 6595,
+    "uploaded_at": "2026-03-08T17:17:04.468421"
+  },
+  "wbs_versions": [
+    {
+      "version": "v1",
+      "created_at": "2026-03-08T17:21:40.765892",
+      "source": "generated",
+      "module_count": 2,
+      "wp_count": 15,
+      "note": "WBS v1"
+    },
+    {
+      "version": "v2",
+      "created_at": "2026-03-08T22:39:07.891331",
+      "source": "generated",
+      "module_count": 2,
+      "wp_count": 16,
+      "note": "WBS v2"
+    }
+  ],
+  "active_wbs_version": "v2",
+  "calculations": [
+    {
+      "calc_id": "calc_20260308_173145",
+      "created_at": "2026-03-08T17:31:45.810857",
+      "wbs_version": "v1",
+      "a_total": 714.0,
+      "b_total": 466.1,
+      "c_total": 278.1,
+      "band": "XL",
+      "module_count": 2,
+      "wp_count": 15
+    },
+    {
+      "calc_id": "calc_20260308_173207",
+      "created_at": "2026-03-08T17:32:07.183203",
+      "wbs_version": "v1",
+      "a_total": 714.0,
+      "b_total": 466.1,
+      "c_total": 278.1,
+      "band": "XL",
+      "module_count": 2,
+      "wp_count": 15
+    },
+    {
+      "calc_id": "calc_20260308_180256",
+      "created_at": "2026-03-08T18:02:56.735361",
+      "wbs_version": "v1",
+      "a_total": 714.0,
+      "b_total": 466.1,
+      "c_total": 278.1,
+      "band": "XL",
+      "module_count": 2,
+      "wp_count": 15
+    },
+    {
+      "calc_id": "calc_20260308_180318",
+      "created_at": "2026-03-08T18:03:18.261362",
+      "wbs_version": "v1",
+      "a_total": 714.0,
+      "b_total": 466.1,
+      "c_total": 278.1,
+      "band": "XL",
+      "module_count": 2,
+      "wp_count": 15
+    },
+    {
+      "calc_id": "calc_20260308_181202",
+      "created_at": "2026-03-08T18:12:02.288347",
+      "wbs_version": "v1",
+      "a_total": 714.0,
+      "b_total": 466.1,
+      "c_total": 278.1,
+      "band": "XL",
+      "module_count": 2,
+      "wp_count": 15
+    },
+    {
+      "calc_id": "calc_20260308_181207",
+      "created_at": "2026-03-08T18:12:07.474147",
+      "wbs_version": "v1",
+      "a_total": 714.0,
+      "b_total": 466.1,
+      "c_total": 278.1,
+      "band": "XL",
+      "module_count": 2,
+      "wp_count": 15
+    },
+    {
+      "calc_id": "calc_20260308_183715",
+      "created_at": "2026-03-08T18:37:15.775578",
+      "wbs_version": "v1",
+      "a_total": 993.5,
+      "b_total": 466.1,
+      "c_total": 278.1,
+      "band": "XL",
+      "module_count": 2,
+      "wp_count": 15
+    },
+    {
+      "calc_id": "calc_20260308_183730",
+      "created_at": "2026-03-08T18:37:30.419770",
+      "wbs_version": "v1",
+      "a_total": 993.5,
+      "b_total": 466.1,
+      "c_total": 278.1,
+      "band": "XL",
+      "module_count": 2,
+      "wp_count": 15
+    },
+    {
+      "calc_id": "calc_20260308_190237",
+      "created_at": "2026-03-08T19:02:37.348658",
+      "wbs_version": "v1",
+      "a_total": 993.5,
+      "b_total": 466.1,
+      "c_total": 278.1,
+      "band": "XL",
+      "module_count": 2,
+      "wp_count": 15
+    },
+    {
+      "calc_id": "calc_20260308_190244",
+      "created_at": "2026-03-08T19:02:44.920644",
+      "wbs_version": "v1",
+      "a_total": 993.5,
+      "b_total": 466.1,
+      "c_total": 278.1,
+      "band": "XL",
+      "module_count": 2,
+      "wp_count": 15
+    },
+    {
+      "calc_id": "calc_20260308_192200",
+      "created_at": "2026-03-08T19:22:00.791003",
+      "wbs_version": "v1",
+      "a_total": 714.0,
+      "b_total": 466.1,
+      "c_total": 278.1,
+      "band": "XL",
+      "module_count": 2,
+      "wp_count": 15
+    },
+    {
+      "calc_id": "calc_20260308_192216",
+      "created_at": "2026-03-08T19:22:16.152199",
+      "wbs_version": "v1",
+      "a_total": 714.0,
+      "b_total": 466.1,
+      "c_total": 278.1,
+      "band": "XL",
+      "module_count": 2,
+      "wp_count": 15
+    }
+  ],
+  "active_calc_id": "calc_20260308_192216",
+  "wizard_state": {
+    "current_step": "wbs_edit",
+    "chat_messages": [
+      {
+        "role": "user",
+        "content": "projeyi kapsam dokümanına bakarak özetler misin"
+      },
+      {
+        "role": "assistant",
+        "content": "# Proje Özeti: Otonom Araç Uzaktan İzleme ve Destek Sistemi\n\n## Proje Amacı\n\nOtokar'ın otonom araçlarını web tabanlı dashboard üzerinden **uzaktan izlemek, komut göndermek ve yolcularla sesli iletişim kurmak** için üç katmanlı güvenli bir yazılım sistemi geliştirilmesi.\n\n---\n\n## Sistem Mimarisi (3 Katman)\n\n```\n[Araç Üstü Gateway] ←→ [Bulut Sunucu] ←→ [Web Dashboard]\n     MOD-001               MOD-002           (kapsam dışı)\n```\n\n---\n\n## Modüller ve WP'ler\n\n### MOD-001: Araç Üstü Gateway Yazılımı (6 WP)\n| WP | Konu | Kompleksite |\n|----|------|-------------|\n| WP-001 | Temel İletişim Altyapısı (MQTT/TLS, WSS, VPN) | very_high |\n| WP-002 | Telemetri ve CANBUS Veri Toplama | high |\n| WP-003 | Komut Alım ve Yürütme (imzalı, RBAC) | very_high |\n| WP-004 | Video Akış Modülü (WebRTC, 5 kamera) | very_high |\n| WP-005 | VoIP Sesli İletişim (SIP/TLS, SRTP) | high |\n| WP-006 | Güvenlik ve Firmware Altyapısı (Secure Boot, OTA, HSM) | very_high |\n\n### MOD-002: Bulut Sunucu / Backend (9 WP)\n| WP | Konu | Kompleksite |\n|----|------|-------------|\n| WP-007 | Sunucu Altyapısı ve Ortam Kurulumu | high |\n| WP-008 | Telemetri Veri İşleme ve Saklama | high |\n| WP-009 | Komut Yönetimi ve İletim Servisi | very_high |\n| WP-010 | Kimlik Doğrulama ve Yetkilendirme (OAuth2, 2FA, RBAC) | very_high |\n| WP-011 | Video/Ses Relay ve Signaling (WebRTC, TURN/STUN) | very_high |\n| WP-012 | Rota Yönetimi Backend | medium |\n| WP-013 | Raporlama Backend | high |\n| WP-014 | PKI ve Sertifika Yönetimi | very_high |\n| WP-015 | Anahtar Yönetim Servisi (KMS) | high |\n\n---\n\n## Efor Özeti\n\n| Profil | Toplam | Min | Max | A'ya Göre Tasarruf |\n|--------|--------|-----|-----|-------------------|\n| **A** (Klasik) | **714 AG** | 587 | 880 | — |\n| **B** (OneFrame destekli) | **466 AG** | 380 | 579 | %35 |\n| **C** (VibeCoding) | **278 AG** | 228 | 343 | %61 |\n\n---\n\n## Projeyi Öne Çıkaran Özellikler\n\n**Güvenlik yoğunluğu son derece yüksek:**\n- ISO/SAE 21434, UNECE WP.29 R155/R156 uyumu\n- HSM/TPM zorunluluğu, Secure Boot, zeroization\n- End-to-end şifreleme (TLS 1.3, DTLS/SRTP, mTLS)\n- MRM gibi insan hayatını etkileyen komutlar → kritik domain carpanı **x1.4**\n\n**En ağır WP'ler (Profil A):**\n1. WP-006 Gateway Güvenlik → **36.5 AG**\n2. WP-010 Kimlik Doğrulama → **34.5 AG**\n3. WP-007 Sunucu Altyapısı → **25.5 AG**\n4. WP-009 Komut Yönetimi → **25.0 AG**\n\n**En hafif WP:**\n- WP-012 Rota Yönetimi → **9.0 AG** (medium kompleksite, standart CRUD)\n\n---\n\n## Temel Riskler\n\n- 15 WP'nin 8'i **very_high** kompleksite\n- Entegrasyon yoğunluğu **8+** (maksimum bant, +%15 çarpan)\n- Gömülü sistem (gateway) + bulut + gerçek zamanlı video/ses üçlüsü → çoklu uzmanlık gereksinimi\n- Fiziksel donanım bağımlılıkları (HSM, kamera, modem, tamper sensörü) → test ortamı maliyeti"
+      },
+      {
+        "role": "user",
+        "content": "peki sorum şu: oneframe eşleşmesi çok fazla olmuş mu"
+      },
+      {
+        "role": "assistant",
+        "content": "# OneFrame Eşleşme Analizi\n\n## Önce Sayıya Bakalım\n\nToplam **100 deliverable** var. Bunların OneFrame bileşenlerine eşleşmesi:\n\n| OF Tipi | Kullanım Sayısı | Ağırlık |\n|---------|----------------|---------|\n| OF-AUTH | 30 | En baskın |\n| OF-SIGNAL | 22 | İkinci |\n| OF-AUTHZ | 14 | Üçüncü |\n| OF-ERR | 5 | — |\n| OF-HANGFIRE | 8 | — |\n| OF-AUDIT | 6 | — |\n| OF-VALID | 5 | — |\n| OF-CRUD | 6 | — |\n| OF-NOTIF | 5 | — |\n| Diğerleri | 9 | — |\n\n---\n\n## Değerlendirmem: Hayır, Fazla Değil — Aksine Doğru\n\n**Neden mantıklı:**\n\n**OF-AUTH/AUTHZ baskınlığı:** Projenin %60+ deliverable'ı gerçekten güvenlik bileşeni. HSM, Secure Boot, mTLS, 2FA, RBAC, JWT, sertifika yönetimi... Bunlar başka türlü kategorize edilemez. Zorlama değil.\n\n**OF-SIGNAL baskınlığı:** MQTT, WebSocket, WebRTC, SIP, VoIP — tüm sistem gerçek zamanlı sinyal/iletişim tabanlı. Bu projenin özü zaten iletişim protokolü yönetimi.\n\n**OF-HANGFIRE:** Scheduler job'lar gerçekten var — OTA self-test, anahtar rotasyonu, sertifika yenileme, retansiyon yönetimi. Zorlama değil.\n\n---\n\n## Asıl Soru: Residuel Değerler Gerçekçi mi?\n\nBurada bir tartışma açılabilir:\n\n| Deliverable | OF Eşleşmesi | Soru |\n|-------------|-------------|------|\n| \"Yankı önleme (Echo Cancellation)\" | OF-VALID | ⚠️ Tartışmalı — DSP algoritması, VALID'den daha ağır olabilir |\n| \"Telemetri veri şeması tanımları\" | OF-DATA | ✅ Uygun |\n| \"High Availability konfigürasyonu\" | OF-DATA | ⚠️ Tartışmalı — Altyapı konfigürasyonu, belki OF-CLOUD daha doğru |\n| \"Debug port devre dışı\" | OF-AUTH | ✅ Uygun |\n| \"Certificate pinning\" | OF-AUTH | ✅ Uygun |\n\n---\n\n## Sonuç\n\n**Eşleşme sayısı fazla değil, dağılım projeyle tutarlı.** Bu proje gerçekten:\n- Güvenlik bileşeni ağırlıklı → OF-AUTH/AUTHZ\n- İletişim protokolü ağırlıklı → OF-SIGNAL\n\nİki deliverable'da OF seçimi tartışmaya açık ama bunların toplam efor üzerindeki etkisi **marginal** — WP-005 ve WP-007'nin küçük kalemleri."
+      }
+    ]
+  },
+  "params_overrides": {}
+}

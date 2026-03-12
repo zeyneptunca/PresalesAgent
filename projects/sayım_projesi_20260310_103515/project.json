@@ -1,0 +1,53 @@
+{
+  "project_id": "sayım_projesi_20260310_103515",
+  "project_name": "Sayım Projesi",
+  "project_description": "Sayım Projesi",
+  "created_at": "2026-03-10T10:35:15.344629",
+  "updated_at": "2026-03-10T10:50:56.055484",
+  "scope": {
+    "pdf_filename": "Sayım Projesi Kapsamı.pdf",
+    "pdf_pages": 4,
+    "pdf_words": 933,
+    "uploaded_at": "2026-03-10T10:35:28.543537"
+  },
+  "wbs_versions": [
+    {
+      "version": "v1",
+      "created_at": "2026-03-10T10:39:43.414893",
+      "source": "generated",
+      "module_count": 8,
+      "wp_count": 21,
+      "note": "WBS v1"
+    }
+  ],
+  "active_wbs_version": "v1",
+  "calculations": [
+    {
+      "calc_id": "calc_20260310_105051",
+      "created_at": "2026-03-10T10:50:51.366033",
+      "wbs_version": "v1",
+      "a_total": 207.0,
+      "b_total": 134.20000000000002,
+      "c_total": 90.4,
+      "band": "L",
+      "module_count": 8,
+      "wp_count": 21
+    },
+    {
+      "calc_id": "calc_20260310_105055",
+      "created_at": "2026-03-10T10:50:56.001116",
+      "wbs_version": "v1",
+      "a_total": 207.0,
+      "b_total": 134.20000000000002,
+      "c_total": 90.4,
+      "band": "L",
+      "module_count": 8,
+      "wp_count": 21
+    }
+  ],
+  "active_calc_id": "calc_20260310_105055",
+  "wizard_state": {
+    "current_step": "results",
+    "chat_messages": []
+  }
+}

@@ -245,7 +245,9 @@ def write_context_analysis(categories: dict, effort_result: dict, filepath: str)
 
 def write_full_export(wbs: dict, categories: dict, effort_result: dict,
                       filepath: str) -> None:
-    """Tek Excel dosyasi (.xlsx) — 6 sheet ile tum veri."""
+    """Tek Excel dosyasi (.xlsx) — 6 sheet ile tum veri.
+    Sayisal degerler gercek sayi olarak yazilir, boylece Excel
+    kullanicinin locale ayarina gore (TR: virgul) gosterir."""
     try:
         import openpyxl
     except ImportError:
@@ -253,8 +255,28 @@ def write_full_export(wbs: dict, categories: dict, effort_result: dict,
 
     wb = openpyxl.Workbook()
 
+    def _try_numeric(value):
+        """String degeri mumkunse int veya float'a cevir."""
+        if not isinstance(value, str):
+            return value
+        s = value.strip()
+        if not s:
+            return s
+        # int dene
+        try:
+            return int(s)
+        except ValueError:
+            pass
+        # float dene
+        try:
+            return float(s)
+        except ValueError:
+            pass
+        return value
+
     def _csv_to_sheet(sheet, writer_fn, *args):
-        """CSV writer fonksiyonunu cagirip sonucu sheet'e yazar."""
+        """CSV writer fonksiyonunu cagirip sonucu sheet'e yazar.
+        Sayisal hucreleri gercek sayi olarak yazar."""
         import tempfile as _tf
         import os
         with _tf.NamedTemporaryFile(delete=False, suffix=".csv", mode="w") as tmp:
@@ -263,8 +285,15 @@ def write_full_export(wbs: dict, categories: dict, effort_result: dict,
 
         with open(tmp_path, "r", encoding="utf-8-sig") as f:
             reader = csv.reader(f, delimiter=";")
+            first_row = True
             for row in reader:
-                sheet.append(row)
+                if first_row:
+                    # Header satiri string kalsin
+                    sheet.append(row)
+                    first_row = False
+                else:
+                    # Veri satirlarinda sayisal degerleri cevir
+                    sheet.append([_try_numeric(cell) for cell in row])
         os.unlink(tmp_path)
 
     # Sheet 1: WBS Yapisi

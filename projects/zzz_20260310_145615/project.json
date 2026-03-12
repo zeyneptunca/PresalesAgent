@@ -1,0 +1,30 @@
+{
+  "project_id": "zzz_20260310_145615",
+  "project_name": "zzz",
+  "project_description": "zzzz",
+  "created_at": "2026-03-10T14:56:15.908581",
+  "updated_at": "2026-03-10T14:59:56.274542",
+  "scope": {
+    "pdf_filename": "Çevre Denetim Projesi Kapsamı.pdf",
+    "pdf_pages": 2,
+    "pdf_words": 380,
+    "uploaded_at": "2026-03-10T14:56:25.520219"
+  },
+  "wbs_versions": [
+    {
+      "version": "v1",
+      "created_at": "2026-03-10T14:59:56.271505",
+      "source": "generated",
+      "module_count": 7,
+      "wp_count": 16,
+      "note": "WBS v1"
+    }
+  ],
+  "active_wbs_version": "v1",
+  "calculations": [],
+  "active_calc_id": null,
+  "wizard_state": {
+    "current_step": "wbs_edit",
+    "chat_messages": []
+  }
+}

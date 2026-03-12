@@ -31,7 +31,6 @@ env/
 # User data (runtime generated)
 uploads/*.pdf
 output/
-projects/
 wbs/*.json
 
 # Keep directory structure

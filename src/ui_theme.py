@@ -80,13 +80,259 @@ def inject_custom_css():
         font-weight: 600;
     }
 
-    /* === SIDEBAR === */
+    /* === SIDEBAR BASE === */
     [data-testid="stSidebar"] {
         background-color: #f8f9fb;
         border-right: 1px solid #e2e8f0;
     }
     [data-testid="stSidebar"] .block-container {
-        padding-top: 1rem !important;
+        padding-top: 0.8rem !important;
+    }
+
+    /* Sidebar butonlari — daha kompakt, daha ince */
+    [data-testid="stSidebar"] .stButton > button {
+        font-size: 0.82rem !important;
+        padding: 0.3rem 0.7rem !important;
+        font-weight: 500 !important;
+        border-color: #e2e8f0 !important;
+        color: #475569 !important;
+        background: transparent !important;
+        justify-content: flex-start !important;
+        text-align: left !important;
+    }
+    [data-testid="stSidebar"] .stButton > button:hover {
+        background: #eef2ff !important;
+        border-color: #c7d2fe !important;
+        color: #0066CC !important;
+        transform: none;
+        box-shadow: none;
+    }
+    /* Sidebar primary buton (Yeni Proje) override */
+    [data-testid="stSidebar"] .stButton > button[kind="primary"] {
+        background-color: #0066CC !important;
+        border-color: #0066CC !important;
+        color: white !important;
+        font-weight: 700 !important;
+        font-size: 0.88rem !important;
+        padding: 0.55rem 1rem !important;
+        justify-content: center !important;
+        text-align: center !important;
+        letter-spacing: 0.3px;
+    }
+    [data-testid="stSidebar"] .stButton > button[kind="primary"]:hover {
+        background-color: #0052a3 !important;
+        color: white !important;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(0, 102, 204, 0.25);
+    }
+    /* Sidebar secondary buton (genel) */
+    [data-testid="stSidebar"] .stButton > button[kind="secondary"] {
+        color: #475569 !important;
+        border-color: #e2e8f0 !important;
+        font-size: 0.82rem !important;
+        padding: 0.3rem 0.7rem !important;
+    }
+    [data-testid="stSidebar"] .stButton > button[kind="secondary"]:hover {
+        background: #eef2ff !important;
+        border-color: #c7d2fe !important;
+    }
+
+    /* === SIDEBAR BRAND === */
+    .sb-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0.4rem 0.2rem 0.2rem 0.2rem;
+    }
+    .sb-brand-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #0066CC, #4f46e5);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+    .sb-brand-text { flex: 1; }
+    .sb-brand-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #1e293b;
+        letter-spacing: -0.3px;
+        line-height: 1.2;
+    }
+    .sb-brand-sub {
+        font-size: 0.68rem;
+        color: #94a3b8;
+        margin-top: 1px;
+    }
+
+    /* === SIDEBAR SPACERS === */
+    .sb-spacer-sm { height: 0.3rem; }
+    .sb-spacer-md { height: 0.6rem; }
+    .sb-spacer-lg { height: 1rem; }
+
+    /* === SIDEBAR SECTION HEADER === */
+    .sb-section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 0.2rem 0.5rem 0.2rem;
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 0.5rem;
+    }
+    .sb-section-header span {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #94a3b8;
+        letter-spacing: 1.5px;
+    }
+    .sb-section-badge {
+        font-size: 0.62rem !important;
+        font-weight: 700 !important;
+        color: #94a3b8 !important;
+        background: #e2e8f0;
+        border-radius: 10px;
+        padding: 1px 7px;
+        letter-spacing: 0 !important;
+    }
+
+    /* === SIDEBAR EMPTY STATE === */
+    .sb-empty {
+        font-size: 0.78rem;
+        color: #94a3b8;
+        padding: 0.8rem 0.5rem;
+        text-align: center;
+        font-style: italic;
+    }
+
+    /* === SIDEBAR AKTIF PROJE (disabled button) === */
+    [data-testid="stSidebar"] .stButton > button:disabled {
+        background: #eef2ff !important;
+        border: 1px solid #c7d2fe !important;
+        color: #0066CC !important;
+        font-weight: 700 !important;
+        opacity: 1 !important;
+        cursor: default !important;
+    }
+    .sb-active-status {
+        font-size: 0.58rem;
+        font-weight: 400;
+        color: #6366f1;
+        padding-left: calc(12% + 0.7rem);
+        margin-top: -0.6rem;
+        line-height: 1;
+    }
+    .sb-dot-active {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: block;
+        background: #0066CC;
+        box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2);
+    }
+
+    /* Sidebar columns dikey ortalama */
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] {
+        align-items: center !important;
+    }
+
+    /* === SIDEBAR PROJE DOT === */
+    .sb-dot-col {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .sb-project-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        display: block;
+    }
+    .sb-dot-done { background: #16a34a; }
+    .sb-dot-progress { background: #f59e0b; }
+    .sb-dot-new { background: #d1d5db; }
+
+    /* === SIDEBAR WIZARD STEPS === */
+    .sb-wizard-steps {
+        padding: 0.3rem 0 0.2rem 1rem;
+        margin: 0;
+        border-left: 2px solid #c7d2fe;
+        margin-left: 1rem;
+    }
+    .sb-step {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        margin: 1px 0;
+    }
+    .sb-step-active {
+        background: #dbeafe;
+    }
+    .sb-step-pending {
+        opacity: 0.45;
+    }
+    .sb-step-done .sb-step-num {
+        background: #16a34a;
+        color: white;
+    }
+    .sb-step-done .sb-step-label {
+        color: #16a34a;
+    }
+    .sb-step-num {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.62rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    .sb-step-active .sb-step-num {
+        background: #0066CC;
+        color: white;
+    }
+    .sb-step-pending .sb-step-num {
+        background: #cbd5e1;
+        color: #64748b;
+    }
+    .sb-step-label {
+        font-size: 0.76rem;
+        font-weight: 600;
+    }
+    .sb-step-active .sb-step-label {
+        color: #1e40af;
+    }
+    .sb-step-pending .sb-step-label {
+        color: #94a3b8;
+    }
+
+    /* === SIDEBAR SETTINGS === */
+    .sb-settings, .sb-settings-active {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0.45rem 0.7rem;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        margin-top: 0.3rem;
+    }
+    .sb-settings-active {
+        background: #eef2ff;
+        color: #0066CC;
+        font-weight: 700;
+        border: 1px solid #c7d2fe;
+    }
+    .sb-settings-icon {
+        font-size: 1rem;
     }
 
     /* === DIVIDER === */

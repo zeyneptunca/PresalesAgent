@@ -238,15 +238,15 @@
   },
   "size_bands": [
     [
-      20,
+      50,
       "S"
     ],
     [
-      60,
+      150,
       "M"
     ],
     [
-      120,
+      300,
       "L"
     ],
     [
@@ -259,25 +259,25 @@
       "PM_Base": 1,
       "BA_Base": 1,
       "Test_Base": 1,
-      "UAT_Base": 2
+      "UAT_Base": 1
     },
     "M": {
       "PM_Base": 2,
       "BA_Base": 2,
       "Test_Base": 2,
-      "UAT_Base": 3
+      "UAT_Base": 2
     },
     "L": {
       "PM_Base": 3,
       "BA_Base": 3,
       "Test_Base": 3,
-      "UAT_Base": 4
+      "UAT_Base": 3
     },
     "XL": {
       "PM_Base": 4,
       "BA_Base": 4,
       "Test_Base": 4,
-      "UAT_Base": 5
+      "UAT_Base": 4
     }
   },
   "global_formulas": {
@@ -285,19 +285,19 @@
       "pm_pct": 0.09,
       "tech_design_pct": 0.04,
       "deployment_pct": 0.03,
-      "uat_pct": 0.3
+      "uat_pct": 0.2
     },
     "B": {
       "pm_pct": 0.07,
       "tech_design_pct": 0.02,
       "deployment_pct": 0.02,
-      "uat_pct": 0.2
+      "uat_pct": 0.15
     },
     "C": {
       "pm_pct": 0.06,
       "tech_design_pct": 0.02,
       "deployment_pct": 0.02,
-      "uat_pct": 0.2
+      "uat_pct": 0.15
     }
   },
   "min_max_ranges": {
@@ -601,7 +601,7 @@
         0.21
       ],
       "OF-SIGNAL": [
-        0.07,
+        0.1,
         0.21
       ],
       "OF-VALID": [
@@ -633,7 +633,7 @@
         0.1
       ],
       "OF-PROFILE": [
-        0.05,
+        0.1,
         0.1
       ],
       "OF-REPORT": [
@@ -649,7 +649,7 @@
         0.15
       ],
       "OF-DMS": [
-        0.05,
+        0.1,
         0.15
       ],
       "OF-FILE": [
@@ -657,11 +657,11 @@
         0.15
       ],
       "OF-CMS": [
-        0.05,
+        0.1,
         0.15
       ],
       "OF-CHATBOT": [
-        0.05,
+        0.1,
         0.15
       ],
       "OF-CRUD": [
@@ -669,36 +669,36 @@
         0.15
       ],
       "OF-UI": [
-        0.03,
+        0.1,
         0.0
       ],
       "OF-FORM": [
-        0.03,
-        0.03
+        0.1,
+        0.1
       ],
       "OF-TABLE": [
-        0.03,
-        0.03
+        0.1,
+        0.1
       ],
       "OF-MENU": [
-        0.03,
-        0.03
+        0.1,
+        0.1
       ],
       "OF-UPLOAD": [
-        0.03,
-        0.03
+        0.1,
+        0.1
       ],
       "OF-FAQ": [
-        0.03,
-        0.06
+        0.1,
+        0.1
       ],
       "OF-I18N": [
-        0.03,
-        0.06
+        0.1,
+        0.1
       ],
       "OF-ERR": [
         0.0,
-        0.06
+        0.1
       ],
       "OF-CICD": [
         0.0,
@@ -832,6 +832,6 @@
   "_meta": {
     "version": "1.0",
     "description": "Efor hesaplama parametre dosyasi.",
-    "last_modified": "2026-03-08T19:14:20.624560"
+    "last_modified": "2026-03-10T14:53:41.600744"
   }
 }

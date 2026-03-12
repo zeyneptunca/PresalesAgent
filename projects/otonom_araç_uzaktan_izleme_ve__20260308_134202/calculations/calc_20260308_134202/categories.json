@@ -1,0 +1,931 @@
+{
+  "wp_kategorileri": {
+    "WP-001": {
+      "deliverables": [
+        {
+          "adi": "Bulut sunucuya MQTT/AMQP over TLS 1.3 bağlantı modülü",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "Bulut sunucu MQTT/AMQP broker ile TLS 1.3 üzerinden dış sistem entegrasyonu"
+        },
+        {
+          "adi": "WebSocket (WSS) üzerinden komut alma modülü",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "Bulut sunucu WebSocket endpoint ile gerçek zamanlı dış sistem entegrasyonu"
+        },
+        {
+          "adi": "Heartbeat mekanizması (kimlik doğrulamalı, sahte heartbeat korumalı)",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "Bulut sunucu ile bağlantı durumu izleme, anti-spoofing güvenlik katmanı, dış sistem bağımlılığı var"
+        },
+        {
+          "adi": "Otomatik yeniden bağlantı modülü (exponential backoff)",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-ERR",
+          "neden": "Bulut sunucu bağlantı kopma/yeniden bağlanma senaryosu, dış sistem bağımlılığı"
+        },
+        {
+          "adi": "Bağlantı kopma durumunda Otonom PC'ye Fail-Safe sinyal gönderimi",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-ERR",
+          "neden": "Otonom PC Ethernet arayüzüne fail-safe sinyal iletimi, dış sistem entegrasyonu"
+        },
+        {
+          "adi": "VPN tünel yönetimi (IPSec IKEv2/WireGuard) ve kill switch",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUTH",
+          "neden": "VPN gateway (IPSec/WireGuard) dış sistem entegrasyonu, güvenlik kritik"
+        },
+        {
+          "adi": "Gateway-Otonom PC Ethernet veri iletim katmanı",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "Otonom PC Ethernet arayüzü ile veri iletimi, dış donanım entegrasyonu"
+        },
+        {
+          "adi": "VLAN izolasyonu konfigürasyonu",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Ağ konfigürasyonu, dış sistem entegrasyonu olmayan statik yapılandırma"
+        }
+      ],
+      "baskin_kategori": "INTEGRATION",
+      "reuse_grubu": null
+    },
+    "WP-002": {
+      "deliverables": [
+        {
+          "adi": "Secure Boot zinciri implementasyonu",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUTH",
+          "neden": "Boot loader dış donanım entegrasyonu, güvenlik chain of trust"
+        },
+        {
+          "adi": "Measured Boot (TPM kaydı) modülü",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUDIT",
+          "neden": "TPM 2.0 donanım modülü entegrasyonu, PCR kaydı"
+        },
+        {
+          "adi": "Firmware dijital imza doğrulama mekanizması",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUTH",
+          "neden": "HSM/TPM üzerinden imza doğrulama, dış donanım entegrasyonu"
+        },
+        {
+          "adi": "HSM/TPM entegrasyonu (anahtar depolama, sertifika saklama)",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUTH",
+          "neden": "HSM/TPM PKCS#11 API dış donanım entegrasyonu"
+        },
+        {
+          "adi": "mTLS client sertifika yönetimi (X.509)",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUTH",
+          "neden": "PKI altyapısı ile dış sistem entegrasyonu, sertifika yönetimi"
+        },
+        {
+          "adi": "Certificate pinning implementasyonu",
+          "kategori": "AUTH_COMPONENT",
+          "of_match": "OF-AUTH",
+          "neden": "Güvenlik bazlı sertifika sabitleme, yetki/kimlik doğrulama bileşeni"
+        },
+        {
+          "adi": "Debug port devre dışı bırakma (JTAG, UART) konfigürasyonu",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Statik donanım konfigürasyonu, basit yapılandırma"
+        },
+        {
+          "adi": "Fiziksel müdahale (tamper) tespit ve zeroization mekanizması",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUTH",
+          "neden": "HSM/TPM donanım etkileşimi, fiziksel güvenlik donanım entegrasyonu"
+        },
+        {
+          "adi": "Çalışma zamanı güvenlik modülü (ASLR, DEP/NX, Stack Canaries)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "OS seviyesi yapılandırma, dış sistem entegrasyonu yok"
+        },
+        {
+          "adi": "Dosya sistemi bütünlük kontrolü (integrity monitoring)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-AUDIT",
+          "neden": "Lokal dosya sistemi kontrolü, dış entegrasyon yok"
+        },
+        {
+          "adi": "Harici port (USB, SD) devre dışı bırakma",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Statik donanım konfigürasyonu"
+        },
+        {
+          "adi": "Minimal attack surface konfigürasyonu",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "OS hardening, statik yapılandırma"
+        }
+      ],
+      "baskin_kategori": "INTEGRATION",
+      "reuse_grubu": null
+    },
+    "WP-003": {
+      "deliverables": [
+        {
+          "adi": "Komut alım ve ayrıştırma modülü",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "Bulut sunucu komut kanalı (WSS/MQTT) üzerinden dış sistem entegrasyonu"
+        },
+        {
+          "adi": "Dijital imza doğrulama (HMAC-SHA256 / Ed25519)",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUTH",
+          "neden": "HSM/TPM üzerinden kriptografik işlem, dış donanım entegrasyonu"
+        },
+        {
+          "adi": "Nonce ve zaman damgası doğrulama (replay attack koruması, 30 saniye tolerans)",
+          "kategori": "AUTH_COMPONENT",
+          "of_match": "OF-AUTH",
+          "neden": "Güvenlik bazlı replay attack koruması, yetki/güvenlik bileşeni"
+        },
+        {
+          "adi": "Bilinmeyen/yetkisiz komut reddetme ve loglama",
+          "kategori": "AUTH_COMPONENT",
+          "of_match": "OF-AUTHZ",
+          "neden": "Yetki bazlı komut filtreleme ve güvenlik loglama"
+        },
+        {
+          "adi": "Rate limiting mekanizması",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-APIGW",
+          "neden": "Token bucket/sliding window algoritması, dış entegrasyon yok"
+        },
+        {
+          "adi": "ACK (Alındı) ve Executed (Uygulandı) teyit gönderimi",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "Bulut sunucu komut kanalına durum raporlama, dış sistem entegrasyonu"
+        },
+        {
+          "adi": "Otonom PC'ye doğrulanmış komut iletimi",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "Otonom PC komut arayüzüne dış sistem entegrasyonu"
+        }
+      ],
+      "baskin_kategori": "INTEGRATION",
+      "reuse_grubu": "G1"
+    },
+    "WP-004": {
+      "deliverables": [
+        {
+          "adi": "Otonom PC'den telemetri veri toplama modülü",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "Otonom PC Ethernet veri arayüzünden veri okuma, dış sistem entegrasyonu"
+        },
+        {
+          "adi": "CANBUS veri okuma ve paketleme modülü",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-DATA",
+          "neden": "CANBUS donanım arayüzü entegrasyonu, protokol parsing"
+        },
+        {
+          "adi": "SHA-256 hash ile veri bütünlük kontrolü",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-VALID",
+          "neden": "Kriptografik hash hesaplama, dış entegrasyon yok"
+        },
+        {
+          "adi": "EK-3 frekanslarına uygun veri iletim zamanlayıcısı",
+          "kategori": "BACKGROUND_JOB",
+          "of_match": "OF-HANGFIRE",
+          "neden": "Zamanlanmış frekans bazlı veri iletim scheduler'ı"
+        },
+        {
+          "adi": "Offline buffer yönetimi (şifreli disk bölümünde saklama)",
+          "kategori": "FILE_PROCESS",
+          "of_match": "OF-FILE",
+          "neden": "Şifreli disk bölümüne veri yazma ve okuma, dosya işleme"
+        },
+        {
+          "adi": "Bağlantı kurulduğunda buffer'daki verilerin sıralı iletimi",
+          "kategori": "BACKGROUND_JOB",
+          "of_match": "OF-HANGFIRE",
+          "neden": "Bağlantı geldiğinde FIFO kuyruğundan async veri iletimi"
+        }
+      ],
+      "baskin_kategori": "INTEGRATION",
+      "reuse_grubu": "G1"
+    },
+    "WP-005": {
+      "deliverables": [
+        {
+          "adi": "Mikrofon ve hoparlör donanım sürücü entegrasyonu",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "Donanım sürücü (ALSA/PulseAudio) dış donanım entegrasyonu"
+        },
+        {
+          "adi": "Çağrı başlatma butonu dinleme ve olay tetikleme modülü",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "Fiziksel buton donanım interrupt entegrasyonu"
+        },
+        {
+          "adi": "VoIP codec ve ses işleme modülü",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-SIGNAL",
+          "neden": "Opus codec implementasyonu, dış entegrasyon yok"
+        },
+        {
+          "adi": "SRTP şifreli ses iletim modülü",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "Bulut sunucu VoIP relay/SFU ile şifreli ses entegrasyonu"
+        },
+        {
+          "adi": "SIP/TLS sinyalleşme modülü",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "SIP/TLS protokol ile bulut sunucu sinyalleşme entegrasyonu"
+        },
+        {
+          "adi": "Yankı önleme (Echo Cancellation) implementasyonu",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-SIGNAL",
+          "neden": "AEC algoritması, lokal ses işleme, dış entegrasyon yok"
+        },
+        {
+          "adi": "Yolcu çağrı isteği bildirimi oluşturma",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-NOTIF",
+          "neden": "Bulut sunucuya bildirim gönderimi, dış sistem entegrasyonu"
+        }
+      ],
+      "baskin_kategori": "INTEGRATION",
+      "reuse_grubu": null
+    },
+    "WP-006": {
+      "deliverables": [
+        {
+          "adi": "Kamera giriş yönetimi (minimum 5 kamera)",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "5 kamera donanımı ile dış donanım entegrasyonu"
+        },
+        {
+          "adi": "Video encoding modülü (1920x1080, 20 FPS)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-FILE",
+          "neden": "H.264/H.265 encoding işlemi, lokal donanım/yazılım işleme"
+        },
+        {
+          "adi": "Secure WebRTC (DTLS+SRTP) veya SRT iletim modülü",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "Bulut sunucu video relay/SFU ile şifreli video akış entegrasyonu"
+        },
+        {
+          "adi": "Adaptive Bitrate yönetimi",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-SIGNAL",
+          "neden": "Bant genişliğine göre kalite ayarlama algoritması, lokal lojik"
+        },
+        {
+          "adi": "On-demand video akışı başlatma/durdurma",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "Bulut sunucudan gelen start/stop komutlarına göre akış kontrolü"
+        },
+        {
+          "adi": "Kamera bağlantı durumu izleme ve raporlama",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUDIT",
+          "neden": "Kamera donanım health check ve bulut sunucuya durum raporlama"
+        }
+      ],
+      "baskin_kategori": "INTEGRATION",
+      "reuse_grubu": null
+    },
+    "WP-007": {
+      "deliverables": [
+        {
+          "adi": "OTA güncelleme paketi indirme modülü",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-FILE",
+          "neden": "Bulut sunucu OTA dağıtım sistemi ile dış sistem entegrasyonu"
+        },
+        {
+          "adi": "Paket dijital imza doğrulama modülü",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUTH",
+          "neden": "HSM/TPM üzerinden imza doğrulama, dış donanım entegrasyonu"
+        },
+        {
+          "adi": "A/B partition yönetimi ve güvenli geri dönüş (rollback)",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-ERR",
+          "neden": "Boot loader (U-Boot) dış bileşen entegrasyonu, A/B partition yönetimi"
+        },
+        {
+          "adi": "Anti-rollback counter mekanizması",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUTH",
+          "neden": "TPM'de anti-rollback counter saklama, dış donanım entegrasyonu"
+        },
+        {
+          "adi": "Güncelleme sonrası otomatik self-test",
+          "kategori": "BACKGROUND_JOB",
+          "of_match": "OF-HANGFIRE",
+          "neden": "Güncelleme sonrası otomatik tetiklenen test iş akışı"
+        },
+        {
+          "adi": "Self-test başarısız durumunda otomatik önceki versiyona geri dönüş",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Otomatik rollback lojik, dış entegrasyon yok"
+        },
+        {
+          "adi": "Güncelleme sırasında güç kaybı/bağlantı kopma koruması",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Atomik güncelleme state machine, lokal hata yönetimi"
+        },
+        {
+          "adi": "Araç hareket durumu kontrolü (hareket halinde güncelleme engeli)",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-VALID",
+          "neden": "Otonom PC'den CAN üzerinden araç hareket durumu okuma, dış sistem entegrasyonu"
+        },
+        {
+          "adi": "Güncelleme geçmişi loglama",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-AUDIT",
+          "neden": "Lokal log kaydı, dış entegrasyon yok"
+        },
+        {
+          "adi": "Şifreli paket iletim ve depolama",
+          "kategori": "FILE_PROCESS",
+          "of_match": "OF-FILE",
+          "neden": "Güncelleme paketi şifreli indirme ve disk üzerinde şifreli saklama"
+        }
+      ],
+      "baskin_kategori": "INTEGRATION",
+      "reuse_grubu": null
+    },
+    "WP-008": {
+      "deliverables": [
+        {
+          "adi": "Bulut altyapı mimarisi tasarımı ve IaC (Infrastructure as Code) konfigürasyonu",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-DATA",
+          "neden": "Bulut sağlayıcı API (AWS/Azure) dış sistem entegrasyonu"
+        },
+        {
+          "adi": "Ağ segmentasyonu (DMZ, uygulama katmanı, veritabanı katmanı)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Ağ konfigürasyonu, statik yapılandırma"
+        },
+        {
+          "adi": "Ortam izolasyonu (geliştirme, test, üretim)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Ortam ayrımı konfigürasyonu"
+        },
+        {
+          "adi": "Yönetim ağı ayrımı (SSH/RDP trafiği)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Ağ konfigürasyonu, statik yapılandırma"
+        },
+        {
+          "adi": "Sunucu hardening konfigürasyonu (gereksiz servis/port kapatma)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "OS seviyesi hardening, statik yapılandırma"
+        },
+        {
+          "adi": "Container image güvenlik taraması ve imzalama pipeline'ı",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUTH",
+          "neden": "Container registry ve CI/CD pipeline dış sistem entegrasyonu"
+        },
+        {
+          "adi": "Veritabanı sunucusu private subnet konfigürasyonu",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-DATA",
+          "neden": "Ağ konfigürasyonu, statik yapılandırma"
+        },
+        {
+          "adi": "High Availability konfigürasyonu",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-DATA",
+          "neden": "Load balancer, auto-scaling bulut sağlayıcı servisleri entegrasyonu"
+        },
+        {
+          "adi": "Firewall kuralları tanımı",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Security Group/NSG statik kural tanımı"
+        },
+        {
+          "adi": "Patch management süreci",
+          "kategori": "BACKGROUND_JOB",
+          "of_match": "OF-HANGFIRE",
+          "neden": "Zamanlanmış yama uygulama süreci, otomatik görev"
+        }
+      ],
+      "baskin_kategori": "SIMPLE_UI",
+      "reuse_grubu": null
+    },
+    "WP-009": {
+      "deliverables": [
+        {
+          "adi": "OAuth2 yetkilendirme sunucusu (Authorization Server)",
+          "kategori": "AUTH_COMPONENT",
+          "of_match": "OF-AUTH",
+          "neden": "OAuth2 kimlik doğrulama ve yetkilendirme bileşeni"
+        },
+        {
+          "adi": "JWT token üretim ve doğrulama servisi (RS256/ES256)",
+          "kategori": "AUTH_COMPONENT",
+          "of_match": "OF-AUTH",
+          "neden": "Token bazlı yetkilendirme bileşeni"
+        },
+        {
+          "adi": "Access token (15 dk) ve Refresh token (24 saat) yönetimi",
+          "kategori": "AUTH_COMPONENT",
+          "of_match": "OF-AUTH",
+          "neden": "Token yaşam döngüsü yetki bileşeni"
+        },
+        {
+          "adi": "2FA modülü (TOTP ve FIDO2/WebAuthn desteği)",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUTH",
+          "neden": "FIDO2/WebAuthn donanım token dış sistem entegrasyonu"
+        },
+        {
+          "adi": "Şifre politikası uygulama modülü (12 karakter, karmaşıklık, 90 gün geçerlilik, son 12 şifre kontrolü, breached password kontrolü)",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUTH",
+          "neden": "Breached password database (HaveIBeenPwned API) dış sistem entegrasyonu"
+        },
+        {
+          "adi": "Hesap kilitleme modülü (5 başarısız deneme, 15 dk kilitleme, progressive delay)",
+          "kategori": "AUTH_COMPONENT",
+          "of_match": "OF-AUTH",
+          "neden": "Güvenlik bazlı hesap kilitleme yetki bileşeni"
+        },
+        {
+          "adi": "Oturum yönetimi (8 saat aktif, 30 dk pasif timeout, max 2 eşzamanlı oturum, server-side invalidation)",
+          "kategori": "AUTH_COMPONENT",
+          "of_match": "OF-AUTH",
+          "neden": "Server-side oturum yönetimi yetki bileşeni"
+        },
+        {
+          "adi": "RBAC motor (Admin, Gözetmen, Operatör, İzleyici rolleri)",
+          "kategori": "AUTH_COMPONENT",
+          "of_match": "OF-AUTHZ",
+          "neden": "Rol bazlı erişim kontrolü yetki bileşeni"
+        },
+        {
+          "adi": "Yetki matrisi yönetim API'leri",
+          "kategori": "AUTH_COMPONENT",
+          "of_match": "OF-AUTHZ",
+          "neden": "Yetki matrisi CRUD, rol bazlı yetki yönetimi"
+        },
+        {
+          "adi": "Cookie güvenlik flag'leri (Secure, HttpOnly, SameSite=Strict)",
+          "kategori": "AUTH_COMPONENT",
+          "of_match": "OF-AUTH",
+          "neden": "Güvenlik bazlı cookie yönetimi yetki bileşeni"
+        }
+      ],
+      "baskin_kategori": "AUTH_COMPONENT",
+      "reuse_grubu": null
+    },
+    "WP-010": {
+      "deliverables": [
+        {
+          "adi": "MQTT/AMQP broker konfigürasyonu ve yönetimi",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "MQTT broker (Mosquitto/EMQX) dış sistem konfigürasyonu ve yönetimi"
+        },
+        {
+          "adi": "Telemetri veri alım ve doğrulama servisi (SHA-256 hash kontrolü)",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-VALID",
+          "neden": "Gateway MQTT bağlantılarından veri alım, dış sistem entegrasyonu"
+        },
+        {
+          "adi": "İmza doğrulaması başarısız mesaj reddetme ve loglama",
+          "kategori": "AUTH_COMPONENT",
+          "of_match": "OF-AUDIT",
+          "neden": "Güvenlik bazlı mesaj filtreleme ve güvenlik loglama"
+        },
+        {
+          "adi": "Veri işleme ve veritabanına yazma pipeline'ı",
+          "kategori": "BACKGROUND_JOB",
+          "of_match": "OF-DATA",
+          "neden": "Yüksek frekanslı telemetri veri işleme pipeline, async batch işleme"
+        },
+        {
+          "adi": "Araç bağlantı durumu izleme (heartbeat takibi)",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "Gateway bağlantıları üzerinden gerçek zamanlı heartbeat izleme"
+        },
+        {
+          "adi": "Araç kayıt/profil yönetim API'leri (Gateway ID ekleme/düzenleme)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-CRUD",
+          "neden": "Basit CRUD API'leri, araç profil yönetimi"
+        },
+        {
+          "adi": "mTLS ile araç kimlik doğrulama (client certificate validation)",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUTH",
+          "neden": "PKI altyapısı ile mTLS sertifika doğrulama, dış sistem entegrasyonu"
+        },
+        {
+          "adi": "Araç sertifika doğrulama ve CRL/OCSP kontrolü",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUTH",
+          "neden": "CRL/OCSP dış servis entegrasyonu, sertifika iptal kontrolü"
+        },
+        {
+          "adi": "Bağlantı kopma/yeniden bağlanma olay yönetimi",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-ERR",
+          "neden": "Bağlantı state machine ve olay tetikleme, lokal lojik"
+        }
+      ],
+      "baskin_kategori": "INTEGRATION",
+      "reuse_grubu": null
+    },
+    "WP-011": {
+      "deliverables": [
+        {
+          "adi": "Komut API endpoint'leri (EK-1 komut listesi)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-CRUD",
+          "neden": "RESTful API endpoint tanımları, CRUD benzeri"
+        },
+        {
+          "adi": "Operatör kimlik ve yetki doğrulama (komut bazlı)",
+          "kategori": "AUTH_COMPONENT",
+          "of_match": "OF-AUTHZ",
+          "neden": "Komut bazlı rol/yetki doğrulama bileşeni"
+        },
+        {
+          "adi": "Kritik komut çift onay mekanizması (UI + 2FA)",
+          "kategori": "AUTH_COMPONENT",
+          "of_match": "OF-AUTH",
+          "neden": "Güvenlik bazlı çift onay (UI + 2FA re-authentication) yetki bileşeni"
+        },
+        {
+          "adi": "Komut dijital imzalama (HMAC-SHA256 / Ed25519)",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-AUTH",
+          "neden": "KMS dış sistem entegrasyonu ile imzalama anahtarları yönetimi"
+        },
+        {
+          "adi": "Nonce ve zaman damgası ekleme (replay attack koruması)",
+          "kategori": "AUTH_COMPONENT",
+          "of_match": "OF-AUTH",
+          "neden": "Güvenlik bazlı replay attack koruması, CSPRNG nonce üretimi"
+        },
+        {
+          "adi": "Komut iletim servisi (WSS/MQTT üzerinden Gateway'e)",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "Gateway komut kanalı (WSS/MQTT) dış sistem entegrasyonu"
+        },
+        {
+          "adi": "ACK ve Executed durum takip mekanizması",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-WORKFLOW",
+          "neden": "Komut state tracking, timeout yönetimi, lokal state machine"
+        },
+        {
+          "adi": "Rate limiting (kullanıcı ve IP bazlı, 5 dakika penceresi)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-APIGW",
+          "neden": "Token bucket/sliding window algoritması, lokal lojik"
+        },
+        {
+          "adi": "Komut denetim logu (kim, hangi araca, ne zaman, hangi komut)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-AUDIT",
+          "neden": "Audit trail loglama, immutable log kaydı"
+        }
+      ],
+      "baskin_kategori": "INTEGRATION",
+      "reuse_grubu": "G2"
+    },
+    "WP-012": {
+      "deliverables": [
+        {
+          "adi": "Video relay/SFU (Selective Forwarding Unit) servisi",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "WebRTC SFU (Janus/mediasoup) dış bileşen entegrasyonu, multi-stream forwarding"
+        },
+        {
+          "adi": "Secure WebRTC signaling sunucusu",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "WebRTC signaling protokol, Gateway ve Dashboard ile dış entegrasyon"
+        },
+        {
+          "adi": "DTLS + SRTP video şifreleme yönetimi",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-AUTH",
+          "neden": "Şifreleme katmanı konfigürasyonu, dış entegrasyon yok"
+        },
+        {
+          "adi": "VoIP relay/SFU servisi",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "SIP proxy/registrar dış bileşen entegrasyonu"
+        },
+        {
+          "adi": "SRTP ses şifreleme yönetimi",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-AUTH",
+          "neden": "Şifreleme katmanı konfigürasyonu, dış entegrasyon yok"
+        },
+        {
+          "adi": "SIP/TLS sinyalleşme sunucusu",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-SIGNAL",
+          "neden": "SIP/TLS protokol sunucusu, Gateway ve Dashboard ile dış entegrasyon"
+        },
+        {
+          "adi": "Oturum bazlı video/ses erişim yetkilendirme",
+          "kategori": "AUTH_COMPONENT",
+          "of_match": "OF-AUTHZ",
+          "neden": "Oturum bazlı media stream yetki kontrolü"
+        },
+        {
+          "adi": "Bant genişliği yönetimi ve on-demand akış kontrolü",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-SIGNAL",
+          "neden": "Bant genişliği izleme ve akış kontrolü lojik"
+        },
+        {
+          "adi": "3 eşzamanlı video izleyici desteği",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-SIGNAL",
+          "neden": "Eşzamanlı kullanıcı yönetimi lojik"
+        }
+      ],
+      "baskin_kategori": "INTEGRATION",
+      "reuse_grubu": null
+    },
+    "WP-013": {
+      "deliverables": [
+        {
+          "adi": "Rota CRUD API'leri (oluşturma, okuma, güncelleme, silme)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-CRUD",
+          "neden": "Standart CRUD operasyonları"
+        },
+        {
+          "adi": "Rota noktaları yönetimi (başlangıç, durak, ara nokta, bitiş - isim, id, lat/lon)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-CRUD",
+          "neden": "Coğrafi veri CRUD yönetimi, basit veri modeli"
+        },
+        {
+          "adi": "Durak davranış parametreleri yönetimi (durup durmama, kapı aksiyonu, kapı açık kalma süresi)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-FORM",
+          "neden": "Parametre form yönetimi, basit konfigürasyon"
+        },
+        {
+          "adi": "Tur bazlı durak iptal API'si",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-CRUD",
+          "neden": "Durak durumu güncelleme API'si, basit lojik"
+        },
+        {
+          "adi": "Rota gönderme komutu API'si (araca iletim)",
+          "kategori": "INTEGRATION",
+          "of_match": "OF-WORKFLOW",
+          "neden": "Komut Yönetim Servisi üzerinden Gateway'e iletim, dış servis entegrasyonu"
+        },
+        {
+          "adi": "Kayıtlı rota listeleme ve seçme API'si",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-TABLE",
+          "neden": "Basit listeleme ve seçim API'si"
+        }
+      ],
+      "baskin_kategori": "SIMPLE_UI",
+      "reuse_grubu": "G3"
+    },
+    "WP-014": {
+      "deliverables": [
+        {
+          "adi": "Rapor üretim motoru (zamanlama, filtreleme, aggregation)",
+          "kategori": "EXPORT_REPORT",
+          "of_match": "OF-REPORT",
+          "neden": "Dinamik rapor üretim motoru, aggregation ve filtreleme"
+        },
+        {
+          "adi": "Alarm raporu servisi (araç, zaman, DTC kodu)",
+          "kategori": "EXPORT_REPORT",
+          "of_match": "OF-REPORT",
+          "neden": "Rapor generate servisi, veri aggregation"
+        },
+        {
+          "adi": "Güç tüketimi raporu servisi (batarya istatistikleri)",
+          "kategori": "EXPORT_REPORT",
+          "of_match": "OF-REPORT",
+          "neden": "Rapor generate servisi, istatistik hesaplama"
+        },
+        {
+          "adi": "CANBUS log raporu servisi (tarih aralığı bazlı)",
+          "kategori": "EXPORT_REPORT",
+          "of_match": "OF-REPORT",
+          "neden": "Rapor generate servisi, zaman serisi veri"
+        },
+        {
+          "adi": "Güvenlik olay raporu servisi (başarısız girişler, yetkisiz erişim, şüpheli aktivite)",
+          "kategori": "EXPORT_REPORT",
+          "of_match": "OF-REPORT",
+          "neden": "Güvenlik rapor generate servisi"
+        },
+        {
+          "adi": "Erişim denetim raporu servisi (kullanıcı, araç, komut, zaman)",
+          "kategori": "EXPORT_REPORT",
+          "of_match": "OF-REPORT",
+          "neden": "Denetim rapor generate servisi"
+        },
+        {
+          "adi": "Zafiyet durum raporu servisi (açık zafiyetler, SLA durumları, düzeltme geçmişi)",
+          "kategori": "EXPORT_REPORT",
+          "of_match": "OF-REPORT",
+          "neden": "Zafiyet rapor generate servisi, dış veri kaynağı entegrasyonu"
+        },
+        {
+          "adi": "PDF ve Excel dışa aktarım modülü",
+          "kategori": "EXPORT_REPORT",
+          "of_match": "OF-REPORT",
+          "neden": "PDF/Excel formatında rapor export, template bazlı üretim"
+        },
+        {
+          "adi": "Rapor filtreleme API'leri (araç, tarih aralığı, özellik, zaman aralığı)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-TABLE",
+          "neden": "Filtreleme API'leri, basit query parametreleri"
+        }
+      ],
+      "baskin_kategori": "EXPORT_REPORT",
+      "reuse_grubu": null
+    },
+    "WP-015": {
+      "deliverables": [
+        {
+          "adi": "Olay algılama ve sınıflandırma motoru",
+          "kategori": "RULE_ENGINE",
+          "of_match": "OF-RULE",
+          "neden": "Olay korelasyon kuralları, güvenlik pattern tespiti, dinamik sınıflandırma motoru"
+        },
+        {
+          "adi": "Operasyonel olay bildirimi (kritik arıza, yolcu arama isteği)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-NOTIF",
+          "neden": "Bildirim oluşturma ve gönderim, basit olay tetikleme"
+        },
+        {
+          "adi": "Güvenlik olay bildirimi (bağlantı kopma, sertifika hatası, brute-force, anormal trafik, firmware bütünlük hatası, bilinmeyen IP erişimi)",
+          "kategori": "RULE_ENGINE",
+          "of_match": "OF-RULE",
+          "neden": "Çoklu güvenlik pattern tanıma ve dinamik kural bazlı tespit, güvenlik keyword'ü var"
+        },
+        {
+          "adi": "Gerçek zamanlı bildirim iletim servisi (WebSocket/SSE)",
+          "kategori": "COMPLEX_UI",
+          "of_match": "OF-SIGNAL",
+          "neden": "Real-time WebSocket/SSE push bildirimi, 'gerçek zamanlı' keyword'ü var"
+        },
+        {
+          "adi": "Olay detay bilgisi (kaynak IP, zaman, etkilenen araç/kullanıcı)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-AUDIT",
+          "neden": "Olay detay veri modeli ve JSON formatı, basit veri yapısı"
+        },
+        {
+          "adi": "Güvenlik olayları ayrı log kuyruğu",
+          "kategori": "BACKGROUND_JOB",
+          "of_match": "OF-HANGFIRE",
+          "neden": "Ayrı message queue (Kafka/RabbitMQ) topic/kuyruğa async yazma"
+        },
+        {
+          "adi": "Bildirim önceliklendirme (renk kodlama: kırmızı - güvenlik)",
+          "kategori": "SIMPLE_UI",
+          "of_match": "OF-NOTIF",
+          "neden": "Basit önceliklendirme lojik ve renk kodlama"
+        }
+      ],
+      "baskin_kategori": "RULE_ENGINE",
+      "reuse_grubu": "G3"
+    }
+  },
+  "reuse_gruplari": {
+    "G1": {
+      "wp_listesi": [
+        "WP-003",
+        "WP-004"
+      ],
+      "neden": "Her ikisi de Gateway embedded modülde INTEGRATION baskın kategorisi, high complexity, benzer deliverable sayısı (7 vs 6), aynı modül (MOD-001). Komut işleme ve telemetri iletim altyapısı ortak MQTT/AMQP ve güvenlik doğrulama pattern'leri paylaşır."
+    },
+    "G2": {
+      "wp_listesi": [
+        "WP-011",
+        "WP-003"
+      ],
+      "neden": "Her ikisi de komut yönetimi odaklı, INTEGRATION baskın, high/very_high komşu complexity. WP-003 Gateway tarafı komut doğrulama, WP-011 sunucu tarafı komut yönetimi - dijital imza, nonce/timestamp, rate limiting, ACK mekanizmaları aynı pattern'i paylaşır."
+    },
+    "G3": {
+      "wp_listesi": [
+        "WP-013",
+        "WP-015"
+      ],
+      "neden": "Medium complexity, benzer deliverable sayısı (6 vs 7), aynı modül (MOD-002). Rota yönetimi SIMPLE_UI baskın, olay yönetimi RULE_ENGINE baskın - ancak her ikisi de operasyonel veri yönetimi domain'inde ve komşu complexity seviyesinde."
+    }
+  },
+  "baglam_analizi": {
+    "domain_karmasikligi": "regulasyon",
+    "domain_neden": "Sistem ISO/SAE 21434, UNECE WP.29 R155/R156 otomotiv siber güvenlik regülasyonlarına, KVKK veri koruma düzenlemesine ve OWASP ASVS L2 güvenlik standartlarına uyum zorunluluğu taşıyor. Otonom araç izleme sistemi doğrudan otomotiv regülasyonlarına tabi bir domain.",
+    "entegrasyon_yogunlugu": "8+",
+    "benzersiz_entegrasyonlar": [
+      "Bulut sunucu MQTT/AMQP broker",
+      "Bulut sunucu WebSocket endpoint",
+      "Otonom PC Ethernet arayüzü",
+      "VPN gateway (IPSec/WireGuard)",
+      "4G/5G modem",
+      "HSM/TPM donanım modülü",
+      "Boot loader (U-Boot)",
+      "PKI/Sertifika yönetim sistemi",
+      "CANBUS arayüzü",
+      "Mikrofon/Hoparlör donanımı",
+      "Çağrı Başlatma Butonu donanımı",
+      "Araç kameraları (5 adet)",
+      "Bulut sunucu VoIP relay/SFU",
+      "Bulut sunucu video relay/SFU",
+      "TURN/STUN sunucuları",
+      "Bulut sağlayıcı API (AWS/Azure)",
+      "Container registry",
+      "CI/CD pipeline",
+      "WAF/DDoS koruma servisi",
+      "IAM merkezi kimlik yönetimi",
+      "FIDO2/WebAuthn donanım token",
+      "Breached password database (HaveIBeenPwned)",
+      "KMS (Key Management Service)",
+      "SIEM sistemi",
+      "Zafiyet takip sistemi",
+      "CRL/OCSP servisleri",
+      "Bulut sunucu OTA dağıtım sistemi"
+    ],
+    "entegrasyon_neden": "Toplam 27 benzersiz dış sistem/donanım entegrasyonu tespit edildi. Embedded donanım (HSM/TPM, kamera, mikrofon, CANBUS, buton), ağ altyapısı (VPN, MQTT broker, TURN/STUN, 4G/5G), bulut servisleri (AWS/Azure, KMS, IAM, WAF), güvenlik servisleri (PKI, SIEM, CRL/OCSP, HaveIBeenPwned) ve medya altyapısı (SFU, SIP) dahil çok katmanlı entegrasyon yapısı mevcut."
+  },
+  "riskler": [
+    "Embedded ortamda (Gateway) TLS 1.3, kriptografik imza doğrulama ve video encoding performansı kaynak kısıtları nedeniyle risk oluşturabilir - iWave donanım kapasitesi doğrulanmalı",
+    "27 benzersiz dış entegrasyon noktası projenin entegrasyon karmaşıklığını çok yüksek seviyeye çıkarıyor, entegrasyon test süresi uzayabilir",
+    "WebRTC SFU ile 5 kamera + 3 eşzamanlı izleyici + <500ms gecikme hedefi 4G/5G ağında garanti edilmesi zor, adaptif mekanizmalar yetmeyebilir",
+    "UNECE R155/R156 ve ISO/SAE 21434 uyumluluk gereksinimleri ek dokümantasyon ve sertifikasyon süreci gerektirir - proje süresini etkileyebilir",
+    "HSM/TPM donanım entegrasyonu, Secure Boot chain of trust ve tamper detection mekanizmaları donanım bağımlı olup tedarik/uyumluluk riski taşır",
+    "VoIP Echo Cancellation kalitesi araç içi akustik ortama bağımlı, saha testleri gerektirir",
+    "OTA güncelleme sırasında güç kaybı senaryosu fiziksel test ortamı gerektirir, A/B partition ile bile brick riski tam sıfırlanamaz",
+    "Eşzamanlı 15 araç bağlantısı ile yüksek frekanslı telemetri veri işleme pipeline'ı performans testi gerektirir",
+    "KVKK kapsamında ses kaydı, konum geçmişi ve video verileri özel koruma gerektiriyor - veri sınıflandırma politikası ve maskeleme mekanizmaları kritik"
+  ],
+  "notlar": [
+    "WP-001 ile WP-007 arası tüm WP'ler embedded Gateway (MOD-001) kapsamında olup OneFrame framework doğrudan uygulanamaz - embedded Linux ortamında özel implementasyon gerektirir",
+    "MOD-002 (Bulut Backend) WP'leri OneFrame ile daha uyumlu ancak güvenlik gereksinimleri standart CRUD pattern'lerin ötesinde özelleştirme gerektirir",
+    "EK-1 (Komut Listesi), EK-3 (Telemetri Frekansları), EK-4 (Yetki Matrisi) referans ediliyor ancak WBS'te detayları yok - bu eklerin içeriği effort tahminini etkileyecektir",
+    "Proje 3 ayrı bileşen (Gateway embedded, Bulut Backend, Web Dashboard) içeriyor ancak mevcut WBS sadece Gateway ve Backend modüllerini kapsıyor - Web Dashboard modülü WBS'te eksik",
+    "Container image güvenlik taraması ve CI/CD pipeline güvenlik kapıları (SAST/DAST/SCA) DevSecOps süreçleri olup ayrı bir WP olarak ele alınabilir",
+    "WP-015 medium complexity olarak işaretlenmiş ancak drivers listesi boş bırakılmış - event-driven mimari, olay korelasyon kuralları ve SIEM entegrasyonu göz önüne alındığında high complexity daha uygun olabilir"
+  ],
+  "sorular": [
+    "Web Dashboard modülü (harita entegrasyonu, video oynatıcı, ses modülü, komut arayüzü, raporlama ekranları) WBS'te eksik görünüyor - ayrı bir modül olarak mı planlanıyor, yoksa kapsam dışı mı?",
+    "WP-015'in complexity seviyesi 'medium' olarak belirlenmiş ve drivers listesi boş - bu kasıtlı mı yoksa eksik mi? Event-driven mimari ve SIEM entegrasyonu göz önüne alındığında 'high' daha uygun görünüyor",
+    "EK-1 komut listesinde kaç farklı komut tipi var? Kritik komut sayısı çift onay mekanizması effort'unu doğrudan etkiler",
+    "Gateway donanımı (iWave) üzerinde video encoding için hardware acceleration (GPU/VPU) mevcut mu? 5 kamera 1080p/20FPS software encoding embedded ortamda çok zorlayıcı olabilir",
+    "SIEM sistemi olarak hangi ürün kullanılacak? Entegrasyon formatı (CEF, LEEF, JSON) effort'u etkiler",
+    "Zafiyet takip sistemi mevcut mu yoksa sıfırdan mı kurulacak? WP-014'teki zafiyet raporu servisi bu sisteme bağımlı",
+    "OTA güncelleme sadece Gateway firmware'i mi kapsıyor yoksa bulut sunucu container image'ları için de OTA benzeri mekanizma mı gerekiyor?",
+    "15 araç eşzamanlı bağlantı hedefi gelecekte ölçeklenecek mi? Mimari tasarımda bu göz önünde bulundurulmalı"
+  ]
+}

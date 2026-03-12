@@ -74,9 +74,24 @@ def _edit_params_dialog():
         import copy
         params = copy.deepcopy(global_params)
 
-    tab1, tab2, tab3, tab4 = st.tabs(["Baz Efor", "Carpanlar", "Faz Yuzdeleri", "OneFrame Residuel"])
+    CONTEXT_DIM_LABELS = {
+        "scale": "Organizasyon Olcegi",
+        "team": "Ekip Deneyimi",
+        "domain": "Domain Karmasikligi",
+        "tech_debt": "Teknik Borc",
+        "integration_density": "Entegrasyon Yogunlugu",
+    }
 
-    with tab1:
+    _DLG_SECTIONS = [
+        "Baz Efor", "Carpanlar", "Faz Yuzdeleri", "Global & Bantlar",
+        "OneFrame", "Baglam", "Min & Yuvarlama",
+    ]
+    section = st.radio(
+        "Bolum", _DLG_SECTIONS, horizontal=True,
+        key="dlg_param_section", label_visibility="collapsed",
+    )
+
+    if section == "Baz Efor":
         st.markdown("**Baz Efor Degerleri (FE, BE) — Adam-Gun**")
         profile = st.selectbox("Profil Sec", ["A", "B", "C"],
                                format_func=lambda x: _PROFILE_LABELS[x],
@@ -98,7 +113,7 @@ def _edit_params_dialog():
             cat = row["Kategori"]
             params["base_effort"][profile][cat] = [round(row["FE"], 2), round(row["BE"], 2)]
 
-    with tab2:
+    elif section == "Carpanlar":
         st.markdown("**Kompleksite Carpanlari**")
         comp_rows = []
         for p in ["A", "B", "C"]:
@@ -121,16 +136,25 @@ def _edit_params_dialog():
         st.divider()
 
         st.markdown("**Batch Carpanlari**")
+        batch_rows = []
         for p in ["A", "B", "C"]:
             vals = params["batch_multipliers"][p]
-            cols = st.columns(len(vals) + 1)
-            cols[0].markdown(f"**{p}**")
-            new_vals = []
+            row = {"Profil": p}
             for i, v in enumerate(vals):
-                nv = cols[i + 1].number_input(f"#{i+1}", value=float(v), step=0.05,
-                                              min_value=0.0, max_value=2.0,
-                                              key=f"dlg_batch_{p}_{i}", label_visibility="collapsed")
-                new_vals.append(round(nv, 2))
+                row[f"#{i+1}"] = v
+            batch_rows.append(row)
+        df = pd.DataFrame(batch_rows)
+        edited = st.data_editor(df, key="dlg_batch_edit", use_container_width=True, hide_index=True,
+                                column_config={
+                                    "Profil": st.column_config.TextColumn(disabled=True),
+                                    **{f"#{i+1}": st.column_config.NumberColumn(min_value=0, max_value=2.0, step=0.05, format="%.2f")
+                                       for i in range(len(params["batch_multipliers"]["A"]))}
+                                })
+        for _, row in edited.iterrows():
+            p = row["Profil"]
+            new_vals = []
+            for i in range(len(params["batch_multipliers"][p])):
+                new_vals.append(round(row[f"#{i+1}"], 2))
             params["batch_multipliers"][p] = new_vals
 
         st.divider()
@@ -156,7 +180,34 @@ def _edit_params_dialog():
             params["integration_multipliers"][p]["2"] = round(row["Nokta 1"], 2)
             params["integration_multipliers"][p]["3"] = round(row["Nokta 3"], 2)
 
-    with tab3:
+        st.divider()
+
+        st.markdown("**Reuse Carpanlari**")
+        reuse_labels = ["Orijinal", "2. kopya", "3. kopya", "4+ kopya"]
+        reuse_rows = []
+        for p in ["A", "B", "C"]:
+            vals = params["reuse_multipliers"][p]
+            row = {"Profil": p}
+            for i, v in enumerate(vals):
+                label = reuse_labels[i] if i < len(reuse_labels) else f"#{i+1}"
+                row[label] = v
+            reuse_rows.append(row)
+        df = pd.DataFrame(reuse_rows)
+        edited = st.data_editor(df, key="dlg_reuse_edit", use_container_width=True, hide_index=True,
+                                column_config={
+                                    "Profil": st.column_config.TextColumn(disabled=True),
+                                    **{label: st.column_config.NumberColumn(min_value=0, max_value=2.0, step=0.05, format="%.2f")
+                                       for label in reuse_labels}
+                                })
+        for _, row in edited.iterrows():
+            p = row["Profil"]
+            new_vals = []
+            for i in range(len(params["reuse_multipliers"][p])):
+                label = reuse_labels[i] if i < len(reuse_labels) else f"#{i+1}"
+                new_vals.append(round(row[label], 2))
+            params["reuse_multipliers"][p] = new_vals
+
+    elif section == "Faz Yuzdeleri":
         st.markdown("**Analiz Yuzdeleri**")
         an_rows = []
         for p in ["A", "B", "C"]:
@@ -179,21 +230,24 @@ def _edit_params_dialog():
         st.divider()
 
         st.markdown("**Tasarim & Mimari Yuzdeleri**")
-        dm_cols = st.columns(2)
-        with dm_cols[0]:
-            st.caption("UI/UX Tasarim")
-            for p in ["A", "B", "C"]:
-                params["design_pct"][p] = round(st.number_input(
-                    f"Profil {p}", value=float(params["design_pct"][p]),
-                    step=0.01, min_value=0.0, max_value=1.0,
-                    key=f"dlg_design_{p}", format="%.2f"), 2)
-        with dm_cols[1]:
-            st.caption("Yazilim Mimarisi")
-            for p in ["A", "B", "C"]:
-                params["architecture_pct"][p] = round(st.number_input(
-                    f"Profil {p}", value=float(params["architecture_pct"][p]),
-                    step=0.01, min_value=0.0, max_value=1.0,
-                    key=f"dlg_arch_{p}", format="%.2f"), 2)
+        dm_rows = []
+        for p in ["A", "B", "C"]:
+            dm_rows.append({
+                "Profil": p,
+                "UI/UX Tasarim": params["design_pct"][p],
+                "Yazilim Mimarisi": params["architecture_pct"][p],
+            })
+        df = pd.DataFrame(dm_rows)
+        edited = st.data_editor(df, key="dlg_design_arch_edit", use_container_width=True, hide_index=True,
+                                column_config={
+                                    "Profil": st.column_config.TextColumn(disabled=True),
+                                    "UI/UX Tasarim": st.column_config.NumberColumn(min_value=0, max_value=1.0, step=0.01, format="%.2f"),
+                                    "Yazilim Mimarisi": st.column_config.NumberColumn(min_value=0, max_value=1.0, step=0.01, format="%.2f"),
+                                })
+        for _, row in edited.iterrows():
+            p = row["Profil"]
+            params["design_pct"][p] = round(row["UI/UX Tasarim"], 2)
+            params["architecture_pct"][p] = round(row["Yazilim Mimarisi"], 2)
 
         st.divider()
 
@@ -216,7 +270,87 @@ def _edit_params_dialog():
             for level in COMPLEXITY_LEVELS:
                 params["test_pct"][p][level] = round(row[level], 2)
 
-    with tab4:
+    elif section == "Global & Bantlar":
+        st.markdown("**Global Efor Yuzdeleri (PM, Tech Design, Deployment, UAT)**")
+        st.caption("Profil bazli yuzde formuller — Technical Total uzerine uygulanir.")
+        gl_rows = []
+        for p in ["A", "B", "C"]:
+            f = params["global_formulas"][p]
+            gl_rows.append({
+                "Profil": p,
+                "PM %": f["pm_pct"],
+                "Tech Design %": f["tech_design_pct"],
+                "Deployment %": f["deployment_pct"],
+                "UAT %": f["uat_pct"],
+            })
+        df = pd.DataFrame(gl_rows)
+        edited = st.data_editor(df, key="dlg_global_edit", use_container_width=True, hide_index=True,
+                                column_config={
+                                    "Profil": st.column_config.TextColumn(disabled=True),
+                                    **{col: st.column_config.NumberColumn(min_value=0, max_value=1.0, step=0.01, format="%.2f")
+                                       for col in ["PM %", "Tech Design %", "Deployment %", "UAT %"]}
+                                })
+        for _, row in edited.iterrows():
+            p = row["Profil"]
+            params["global_formulas"][p] = {
+                "pm_pct": round(row["PM %"], 2),
+                "tech_design_pct": round(row["Tech Design %"], 2),
+                "deployment_pct": round(row["Deployment %"], 2),
+                "uat_pct": round(row["UAT %"], 2),
+            }
+
+        st.divider()
+
+        st.markdown("**Sabit Taban Degerleri** (B ve C profillerinde uygulanir)")
+        st.caption("PM_Base, BA_Base, Test_Base, UAT_Base — bant bazli minimum degerler.")
+        fb_rows = []
+        for band in ["S", "M", "L", "XL"]:
+            b = params["fixed_bases"][band]
+            fb_rows.append({
+                "Bant": band,
+                "PM_Base": b["PM_Base"], "BA_Base": b["BA_Base"],
+                "Test_Base": b["Test_Base"], "UAT_Base": b["UAT_Base"],
+            })
+        df = pd.DataFrame(fb_rows)
+        edited = st.data_editor(df, key="dlg_fixed_bases_edit", use_container_width=True, hide_index=True,
+                                column_config={
+                                    "Bant": st.column_config.TextColumn(disabled=True),
+                                    **{col: st.column_config.NumberColumn(min_value=0, step=1)
+                                       for col in ["PM_Base", "BA_Base", "Test_Base", "UAT_Base"]}
+                                })
+        for _, row in edited.iterrows():
+            band = row["Bant"]
+            params["fixed_bases"][band] = {
+                "PM_Base": int(row["PM_Base"]), "BA_Base": int(row["BA_Base"]),
+                "Test_Base": int(row["Test_Base"]), "UAT_Base": int(row["UAT_Base"]),
+            }
+
+        st.divider()
+
+        st.markdown("**Proje Buyukluk Bant Esikleri (AG)**")
+        bands = params["size_bands"]
+        band_rows = []
+        for threshold, label in bands:
+            if label != "XL":
+                band_rows.append({"Bant": label, "Ust Sinir (AG)": float(threshold)})
+            else:
+                band_rows.append({"Bant": label, "Ust Sinir (AG)": 9999.0})
+        df = pd.DataFrame(band_rows)
+        edited = st.data_editor(df, key="dlg_size_bands_edit", use_container_width=True, hide_index=True,
+                                column_config={
+                                    "Bant": st.column_config.TextColumn(disabled=True),
+                                    "Ust Sinir (AG)": st.column_config.NumberColumn(min_value=1.0, step=5.0, format="%.0f"),
+                                })
+        new_bands = []
+        for _, row in edited.iterrows():
+            label = row["Bant"]
+            if label == "XL":
+                new_bands.append([1e18, label])
+            else:
+                new_bands.append([float(row["Ust Sinir (AG)"]), label])
+        params["size_bands"] = new_bands
+
+    elif section == "OneFrame":
         st.markdown("**OneFrame Residuel Efor Tablosu (FE, BE) — Adam-Gun**")
         st.caption("OF eslesmesi olan deliverable'lar icin Baz Efor yerine bu degerler kullanilir.")
         of_profile = st.selectbox("Profil Sec", ["A", "B", "C"],
@@ -238,6 +372,100 @@ def _edit_params_dialog():
         for _, row in of_edited.iterrows():
             of_code = row["OF Kodu"]
             params["oneframe_residual"][of_profile][of_code] = [round(row["FE"], 2), round(row["BE"], 2)]
+
+    elif section == "Baglam":
+        st.markdown("**Baglam Carpanlari**")
+        st.caption("Proje baglami icin AB (Profil A/B) ve C (Profil C) carpanlari.")
+        for dim_key, dim_label in CONTEXT_DIM_LABELS.items():
+            st.markdown(f"**{dim_label}**")
+            dim_data = params["context_multipliers"].get(dim_key, {})
+            ctx_rows = []
+            for val_key, val_data in dim_data.items():
+                ctx_rows.append({
+                    "Deger": val_key,
+                    "AB Carpan": val_data.get("AB", 1.0),
+                    "C Carpan": val_data.get("C", 1.0),
+                })
+            df = pd.DataFrame(ctx_rows)
+            edited = st.data_editor(df, key=f"dlg_ctx_{dim_key}", use_container_width=True, hide_index=True,
+                                    column_config={
+                                        "Deger": st.column_config.TextColumn(disabled=True),
+                                        "AB Carpan": st.column_config.NumberColumn(min_value=0, step=0.05, format="%.2f"),
+                                        "C Carpan": st.column_config.NumberColumn(min_value=0, step=0.05, format="%.2f"),
+                                    })
+            for _, row in edited.iterrows():
+                val_key = row["Deger"]
+                params["context_multipliers"][dim_key][val_key] = {
+                    "AB": round(row["AB Carpan"], 2),
+                    "C": round(row["C Carpan"], 2),
+                }
+            st.markdown("")
+
+        st.divider()
+        st.markdown("**VibeCoding Baglam Carpani Ust Siniri**")
+        cap_rows = [{"Parametre": "Vibe Context Cap", "Deger": float(params.get("vibe_context_cap", 1.35))}]
+        df = pd.DataFrame(cap_rows)
+        edited = st.data_editor(df, key="dlg_vibe_cap_edit", use_container_width=True, hide_index=True,
+                                column_config={
+                                    "Parametre": st.column_config.TextColumn(disabled=True),
+                                    "Deger": st.column_config.NumberColumn(min_value=1.0, max_value=3.0, step=0.05, format="%.2f"),
+                                })
+        params["vibe_context_cap"] = round(float(edited.iloc[0]["Deger"]), 2)
+
+    elif section == "Min & Yuvarlama":
+        st.markdown("**Minimum Efor Korumasi**")
+        st.caption("Deliverable, WP ve faz bazinda minimum efor degerleri.")
+        min_rows = []
+        for level in ["deliverable", "wp", "phase"]:
+            row = {"Seviye": level}
+            for p in ["A", "B", "C"]:
+                row[f"Profil {p}"] = params["minimum_effort"][level][p]
+            min_rows.append(row)
+        df = pd.DataFrame(min_rows)
+        edited = st.data_editor(df, key="dlg_min_effort_edit", use_container_width=True, hide_index=True,
+                                column_config={
+                                    "Seviye": st.column_config.TextColumn(disabled=True),
+                                    **{f"Profil {p}": st.column_config.NumberColumn(min_value=0, step=0.1, format="%.1f")
+                                       for p in ["A", "B", "C"]}
+                                })
+        for _, row in edited.iterrows():
+            level = row["Seviye"]
+            for p in ["A", "B", "C"]:
+                params["minimum_effort"][level][p] = round(row[f"Profil {p}"], 1)
+
+        st.divider()
+
+        st.markdown("**Yuvarlama Hassasiyeti**")
+        round_rows = []
+        for p in ["A", "B", "C"]:
+            round_rows.append({"Profil": p, "Hassasiyet": float(params["rounding_precision"][p])})
+        df = pd.DataFrame(round_rows)
+        edited = st.data_editor(df, key="dlg_round_edit", use_container_width=True, hide_index=True,
+                                column_config={
+                                    "Profil": st.column_config.TextColumn(disabled=True),
+                                    "Hassasiyet": st.column_config.NumberColumn(min_value=0.1, max_value=1.0, step=0.1, format="%.1f"),
+                                })
+        for _, row in edited.iterrows():
+            p = row["Profil"]
+            params["rounding_precision"][p] = round(float(row["Hassasiyet"]), 1)
+
+        st.divider()
+
+        st.markdown("**Min-Max Araliklari**")
+        mm_rows = []
+        for level in COMPLEXITY_LEVELS:
+            vals = params["min_max_ranges"].get(level, [0.9, 1.1])
+            mm_rows.append({"Complexity": level, "Min Carpan": vals[0], "Max Carpan": vals[1]})
+        df = pd.DataFrame(mm_rows)
+        edited = st.data_editor(df, key="dlg_minmax_edit", use_container_width=True, hide_index=True,
+                                column_config={
+                                    "Complexity": st.column_config.TextColumn(disabled=True),
+                                    "Min Carpan": st.column_config.NumberColumn(min_value=0, max_value=1.0, step=0.05, format="%.2f"),
+                                    "Max Carpan": st.column_config.NumberColumn(min_value=1.0, max_value=3.0, step=0.05, format="%.2f"),
+                                })
+        for _, row in edited.iterrows():
+            level = row["Complexity"]
+            params["min_max_ranges"][level] = [round(row["Min Carpan"], 2), round(row["Max Carpan"], 2)]
 
     # Kaydet butonu
     st.divider()
