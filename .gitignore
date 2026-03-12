@@ -32,12 +32,14 @@ env/
 uploads/*.pdf
 output/
 wbs/*.json
+wbs/.raw_responses/
+projects/*
+!projects/.gitkeep
 
 # Keep directory structure
 !uploads/.gitkeep
 !output/.gitkeep
 !wbs/.gitkeep
-!projects/.gitkeep
 
 # Claude Code (session data)
 .claude/
