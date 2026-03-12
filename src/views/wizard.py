@@ -59,17 +59,17 @@ def _count_overrides(overrides: dict) -> list:
     return leaves
 
 
-@st.dialog("Hesaplama Parametreleri (Projeye Ozel)", width="large")
-def _edit_params_dialog():
-    """Modal parametre duzenleyici — projeye ozel override kaydeder, global config degismez."""
-    project_id = st.session_state.get("active_project_id")
+def _render_params_inline(project_id: str):
+    """Hesaplama parametrelerini inline expander'lar ile gosterir."""
     global_params = load_params()
+    # Reset counter — key'leri benzersiz yapmak icin
+    _rc = st.session_state.get("_params_reset_counter", 0)
+    _pfx = f"dlg{_rc}_"
 
-    # Proje override varsa birlestirilmis hali goster
     overrides = pm.load_project_params_overrides(project_id) if project_id else None
     if overrides:
+        import copy
         params = merge_params(global_params, overrides)
-        st.info(f"Bu projede **{len(_count_overrides(overrides))} parametre** projeye ozel override edilmis.")
     else:
         import copy
         params = copy.deepcopy(global_params)
@@ -82,27 +82,18 @@ def _edit_params_dialog():
         "integration_density": "Entegrasyon Yogunlugu",
     }
 
-    _DLG_SECTIONS = [
-        "Baz Efor", "Carpanlar", "Faz Yuzdeleri", "Global & Bantlar",
-        "OneFrame", "Baglam", "Min & Yuvarlama",
-    ]
-    section = st.radio(
-        "Bolum", _DLG_SECTIONS, horizontal=True,
-        key="dlg_param_section", label_visibility="collapsed",
-    )
-
-    if section == "Baz Efor":
+    with st.expander("Baz Efor"):
         st.markdown("**Baz Efor Degerleri (FE, BE) — Adam-Gun**")
         profile = st.selectbox("Profil Sec", ["A", "B", "C"],
                                format_func=lambda x: _PROFILE_LABELS[x],
-                               key="dlg_base_profile")
+                               key=f"{_pfx}base_profile")
         base = params["base_effort"][profile]
         rows = []
         for cat in CATEGORIES:
             vals = base.get(cat, [0, 0])
             rows.append({"Kategori": cat, "FE": vals[0], "BE": vals[1]})
         df = pd.DataFrame(rows)
-        edited = st.data_editor(df, key=f"dlg_base_edit_{profile}",
+        edited = st.data_editor(df, key=f"{_pfx}base_edit_{profile}",
                                 use_container_width=True, hide_index=True,
                                 column_config={
                                     "Kategori": st.column_config.TextColumn(disabled=True),
@@ -113,7 +104,7 @@ def _edit_params_dialog():
             cat = row["Kategori"]
             params["base_effort"][profile][cat] = [round(row["FE"], 2), round(row["BE"], 2)]
 
-    elif section == "Carpanlar":
+    with st.expander("Carpanlar"):
         st.markdown("**Kompleksite Carpanlari**")
         comp_rows = []
         for p in ["A", "B", "C"]:
@@ -122,7 +113,7 @@ def _edit_params_dialog():
                 row[level] = params["complexity_multipliers"][p][level]
             comp_rows.append(row)
         df = pd.DataFrame(comp_rows)
-        edited = st.data_editor(df, key="dlg_complexity_edit", use_container_width=True, hide_index=True,
+        edited = st.data_editor(df, key=f"{_pfx}complexity_edit", use_container_width=True, hide_index=True,
                                 column_config={
                                     "Profil": st.column_config.TextColumn(disabled=True),
                                     **{level: st.column_config.NumberColumn(min_value=0, step=0.05, format="%.2f")
@@ -144,7 +135,7 @@ def _edit_params_dialog():
                 row[f"#{i+1}"] = v
             batch_rows.append(row)
         df = pd.DataFrame(batch_rows)
-        edited = st.data_editor(df, key="dlg_batch_edit", use_container_width=True, hide_index=True,
+        edited = st.data_editor(df, key=f"{_pfx}batch_edit", use_container_width=True, hide_index=True,
                                 column_config={
                                     "Profil": st.column_config.TextColumn(disabled=True),
                                     **{f"#{i+1}": st.column_config.NumberColumn(min_value=0, max_value=2.0, step=0.05, format="%.2f")
@@ -167,7 +158,7 @@ def _edit_params_dialog():
                 row[f"Nokta {k}"] = params["integration_multipliers"][p].get(k, 1.0)
             int_rows.append(row)
         df = pd.DataFrame(int_rows)
-        edited = st.data_editor(df, key="dlg_integration_edit", use_container_width=True, hide_index=True,
+        edited = st.data_editor(df, key=f"{_pfx}integration_edit", use_container_width=True, hide_index=True,
                                 column_config={
                                     "Profil": st.column_config.TextColumn(disabled=True),
                                     **{f"Nokta {k}": st.column_config.NumberColumn(min_value=0, step=0.05, format="%.2f")
@@ -193,7 +184,7 @@ def _edit_params_dialog():
                 row[label] = v
             reuse_rows.append(row)
         df = pd.DataFrame(reuse_rows)
-        edited = st.data_editor(df, key="dlg_reuse_edit", use_container_width=True, hide_index=True,
+        edited = st.data_editor(df, key=f"{_pfx}reuse_edit", use_container_width=True, hide_index=True,
                                 column_config={
                                     "Profil": st.column_config.TextColumn(disabled=True),
                                     **{label: st.column_config.NumberColumn(min_value=0, max_value=2.0, step=0.05, format="%.2f")
@@ -207,7 +198,7 @@ def _edit_params_dialog():
                 new_vals.append(round(row[label], 2))
             params["reuse_multipliers"][p] = new_vals
 
-    elif section == "Faz Yuzdeleri":
+    with st.expander("Faz Yuzdeleri"):
         st.markdown("**Analiz Yuzdeleri**")
         an_rows = []
         for p in ["A", "B", "C"]:
@@ -216,7 +207,7 @@ def _edit_params_dialog():
                 row[level] = params["analysis_pct"][p][level]
             an_rows.append(row)
         df = pd.DataFrame(an_rows)
-        edited = st.data_editor(df, key="dlg_analysis_edit", use_container_width=True, hide_index=True,
+        edited = st.data_editor(df, key=f"{_pfx}analysis_edit", use_container_width=True, hide_index=True,
                                 column_config={
                                     "Profil": st.column_config.TextColumn(disabled=True),
                                     **{level: st.column_config.NumberColumn(min_value=0, max_value=1.0, step=0.01, format="%.2f")
@@ -238,7 +229,7 @@ def _edit_params_dialog():
                 "Yazilim Mimarisi": params["architecture_pct"][p],
             })
         df = pd.DataFrame(dm_rows)
-        edited = st.data_editor(df, key="dlg_design_arch_edit", use_container_width=True, hide_index=True,
+        edited = st.data_editor(df, key=f"{_pfx}design_arch_edit", use_container_width=True, hide_index=True,
                                 column_config={
                                     "Profil": st.column_config.TextColumn(disabled=True),
                                     "UI/UX Tasarim": st.column_config.NumberColumn(min_value=0, max_value=1.0, step=0.01, format="%.2f"),
@@ -259,7 +250,7 @@ def _edit_params_dialog():
                 row[level] = params["test_pct"][p][level]
             test_rows.append(row)
         df = pd.DataFrame(test_rows)
-        edited = st.data_editor(df, key="dlg_test_edit", use_container_width=True, hide_index=True,
+        edited = st.data_editor(df, key=f"{_pfx}test_edit", use_container_width=True, hide_index=True,
                                 column_config={
                                     "Profil": st.column_config.TextColumn(disabled=True),
                                     **{level: st.column_config.NumberColumn(min_value=0, max_value=1.0, step=0.01, format="%.2f")
@@ -270,7 +261,7 @@ def _edit_params_dialog():
             for level in COMPLEXITY_LEVELS:
                 params["test_pct"][p][level] = round(row[level], 2)
 
-    elif section == "Global & Bantlar":
+    with st.expander("Global & Bantlar"):
         st.markdown("**Global Efor Yuzdeleri (PM, Tech Design, Deployment, UAT)**")
         st.caption("Profil bazli yuzde formuller — Technical Total uzerine uygulanir.")
         gl_rows = []
@@ -284,7 +275,7 @@ def _edit_params_dialog():
                 "UAT %": f["uat_pct"],
             })
         df = pd.DataFrame(gl_rows)
-        edited = st.data_editor(df, key="dlg_global_edit", use_container_width=True, hide_index=True,
+        edited = st.data_editor(df, key=f"{_pfx}global_edit", use_container_width=True, hide_index=True,
                                 column_config={
                                     "Profil": st.column_config.TextColumn(disabled=True),
                                     **{col: st.column_config.NumberColumn(min_value=0, max_value=1.0, step=0.01, format="%.2f")
@@ -312,7 +303,7 @@ def _edit_params_dialog():
                 "Test_Base": b["Test_Base"], "UAT_Base": b["UAT_Base"],
             })
         df = pd.DataFrame(fb_rows)
-        edited = st.data_editor(df, key="dlg_fixed_bases_edit", use_container_width=True, hide_index=True,
+        edited = st.data_editor(df, key=f"{_pfx}fixed_bases_edit", use_container_width=True, hide_index=True,
                                 column_config={
                                     "Bant": st.column_config.TextColumn(disabled=True),
                                     **{col: st.column_config.NumberColumn(min_value=0, step=1)
@@ -336,7 +327,7 @@ def _edit_params_dialog():
             else:
                 band_rows.append({"Bant": label, "Ust Sinir (AG)": 9999.0})
         df = pd.DataFrame(band_rows)
-        edited = st.data_editor(df, key="dlg_size_bands_edit", use_container_width=True, hide_index=True,
+        edited = st.data_editor(df, key=f"{_pfx}size_bands_edit", use_container_width=True, hide_index=True,
                                 column_config={
                                     "Bant": st.column_config.TextColumn(disabled=True),
                                     "Ust Sinir (AG)": st.column_config.NumberColumn(min_value=1.0, step=5.0, format="%.0f"),
@@ -350,19 +341,19 @@ def _edit_params_dialog():
                 new_bands.append([float(row["Ust Sinir (AG)"]), label])
         params["size_bands"] = new_bands
 
-    elif section == "OneFrame":
+    with st.expander("OneFrame"):
         st.markdown("**OneFrame Residuel Efor Tablosu (FE, BE) — Adam-Gun**")
         st.caption("OF eslesmesi olan deliverable'lar icin Baz Efor yerine bu degerler kullanilir.")
         of_profile = st.selectbox("Profil Sec", ["A", "B", "C"],
                                    format_func=lambda x: _PROFILE_LABELS[x],
-                                   key="dlg_of_profile")
+                                   key=f"{_pfx}of_profile")
         of_data = params["oneframe_residual"].get(of_profile, {})
         of_rows = []
         for of_code in OF_CODES:
             vals = of_data.get(of_code, [0, 0])
             of_rows.append({"OF Kodu": of_code, "FE": vals[0], "BE": vals[1]})
         of_df = pd.DataFrame(of_rows)
-        of_edited = st.data_editor(of_df, key=f"dlg_of_edit_{of_profile}",
+        of_edited = st.data_editor(of_df, key=f"{_pfx}of_edit_{of_profile}",
                                     use_container_width=True, hide_index=True,
                                     column_config={
                                         "OF Kodu": st.column_config.TextColumn(disabled=True),
@@ -373,8 +364,7 @@ def _edit_params_dialog():
             of_code = row["OF Kodu"]
             params["oneframe_residual"][of_profile][of_code] = [round(row["FE"], 2), round(row["BE"], 2)]
 
-    elif section == "Baglam":
-        st.markdown("**Baglam Carpanlari**")
+    with st.expander("Baglam Carpanlari"):
         st.caption("Proje baglami icin AB (Profil A/B) ve C (Profil C) carpanlari.")
         for dim_key, dim_label in CONTEXT_DIM_LABELS.items():
             st.markdown(f"**{dim_label}**")
@@ -387,7 +377,7 @@ def _edit_params_dialog():
                     "C Carpan": val_data.get("C", 1.0),
                 })
             df = pd.DataFrame(ctx_rows)
-            edited = st.data_editor(df, key=f"dlg_ctx_{dim_key}", use_container_width=True, hide_index=True,
+            edited = st.data_editor(df, key=f"{_pfx}ctx_{dim_key}", use_container_width=True, hide_index=True,
                                     column_config={
                                         "Deger": st.column_config.TextColumn(disabled=True),
                                         "AB Carpan": st.column_config.NumberColumn(min_value=0, step=0.05, format="%.2f"),
@@ -405,14 +395,14 @@ def _edit_params_dialog():
         st.markdown("**VibeCoding Baglam Carpani Ust Siniri**")
         cap_rows = [{"Parametre": "Vibe Context Cap", "Deger": float(params.get("vibe_context_cap", 1.35))}]
         df = pd.DataFrame(cap_rows)
-        edited = st.data_editor(df, key="dlg_vibe_cap_edit", use_container_width=True, hide_index=True,
+        edited = st.data_editor(df, key=f"{_pfx}vibe_cap_edit", use_container_width=True, hide_index=True,
                                 column_config={
                                     "Parametre": st.column_config.TextColumn(disabled=True),
                                     "Deger": st.column_config.NumberColumn(min_value=1.0, max_value=3.0, step=0.05, format="%.2f"),
                                 })
         params["vibe_context_cap"] = round(float(edited.iloc[0]["Deger"]), 2)
 
-    elif section == "Min & Yuvarlama":
+    with st.expander("Min & Yuvarlama"):
         st.markdown("**Minimum Efor Korumasi**")
         st.caption("Deliverable, WP ve faz bazinda minimum efor degerleri.")
         min_rows = []
@@ -422,7 +412,7 @@ def _edit_params_dialog():
                 row[f"Profil {p}"] = params["minimum_effort"][level][p]
             min_rows.append(row)
         df = pd.DataFrame(min_rows)
-        edited = st.data_editor(df, key="dlg_min_effort_edit", use_container_width=True, hide_index=True,
+        edited = st.data_editor(df, key=f"{_pfx}min_effort_edit", use_container_width=True, hide_index=True,
                                 column_config={
                                     "Seviye": st.column_config.TextColumn(disabled=True),
                                     **{f"Profil {p}": st.column_config.NumberColumn(min_value=0, step=0.1, format="%.1f")
@@ -440,7 +430,7 @@ def _edit_params_dialog():
         for p in ["A", "B", "C"]:
             round_rows.append({"Profil": p, "Hassasiyet": float(params["rounding_precision"][p])})
         df = pd.DataFrame(round_rows)
-        edited = st.data_editor(df, key="dlg_round_edit", use_container_width=True, hide_index=True,
+        edited = st.data_editor(df, key=f"{_pfx}round_edit", use_container_width=True, hide_index=True,
                                 column_config={
                                     "Profil": st.column_config.TextColumn(disabled=True),
                                     "Hassasiyet": st.column_config.NumberColumn(min_value=0.1, max_value=1.0, step=0.1, format="%.1f"),
@@ -457,7 +447,7 @@ def _edit_params_dialog():
             vals = params["min_max_ranges"].get(level, [0.9, 1.1])
             mm_rows.append({"Complexity": level, "Min Carpan": vals[0], "Max Carpan": vals[1]})
         df = pd.DataFrame(mm_rows)
-        edited = st.data_editor(df, key="dlg_minmax_edit", use_container_width=True, hide_index=True,
+        edited = st.data_editor(df, key=f"{_pfx}minmax_edit", use_container_width=True, hide_index=True,
                                 column_config={
                                     "Complexity": st.column_config.TextColumn(disabled=True),
                                     "Min Carpan": st.column_config.NumberColumn(min_value=0, max_value=1.0, step=0.05, format="%.2f"),
@@ -467,42 +457,20 @@ def _edit_params_dialog():
             level = row["Complexity"]
             params["min_max_ranges"][level] = [round(row["Min Carpan"], 2), round(row["Max Carpan"], 2)]
 
-    # Kaydet butonu
-    st.divider()
-    save_col1, save_col2, save_col3 = st.columns(3)
-    with save_col1:
-        if st.button("Kaydet ve Kapat", type="primary", use_container_width=True, key="dlg_save"):
-            if project_id:
-                # Sadece global'den farkli olan degerleri override olarak kaydet
-                project_overrides = extract_overrides(params, global_params)
-                pm.save_project_params(project_id, project_overrides)
-                # Merged params ile tablolari yukle
-                merged = merge_params(global_params, project_overrides)
-                tables.reload_tables(merged)
-                if project_overrides:
-                    st.toast(f"Projeye ozel {len(_count_overrides(project_overrides))} parametre kaydedildi")
-                else:
-                    st.toast("Parametreler varsayilan degerlerde (override yok)")
-            else:
-                # Proje yoksa global kaydet (fallback)
-                errors = save_params(params)
-                if errors:
-                    for e in errors:
-                        st.error(e)
-                    return
-                tables.reload_tables()
-                st.toast("Parametreler kaydedildi")
-            st.rerun()
-    with save_col2:
-        if st.button("Varsayilanlara Don", use_container_width=True, key="dlg_reset"):
-            if project_id:
-                pm.clear_project_params(project_id)
-                tables.reload_tables()
-                st.toast("Proje override'lari temizlendi — varsayilan parametreler aktif")
-            st.rerun()
-    with save_col3:
-        if st.button("Iptal", use_container_width=True, key="dlg_cancel"):
-            st.rerun()
+    # Duzenlenmis parametreleri session state'e yaz — "Onayla" butonu kullanir
+    st.session_state._edited_params = params
+    st.session_state._edited_params_global = global_params
+
+    if st.button("Varsayilanlara Don", use_container_width=True, key="dlg_reset"):
+        if project_id:
+            pm.clear_project_params(project_id)
+            tables.reload_tables()
+            # Counter artir — tum widget key'leri degisir, eski state'ler gecersiz olur
+            st.session_state["_params_reset_counter"] = _rc + 1
+            st.session_state.pop("_edited_params", None)
+            st.session_state.pop("_edited_params_global", None)
+            st.toast("Varsayilan parametreler yuklendi")
+        st.rerun()
 
 
 def show_wizard():
@@ -527,6 +495,9 @@ def show_wizard():
 def _go_step(step: str, project_id: str | None = None):
     """Wizard step degistir ve kaydet."""
     st.session_state.wizard_step = step
+    # Hesaplama adimina yeniden girildiginde flag temizle
+    if step == "calculate":
+        st.session_state.pop("_calc_done", None)
     if project_id:
         pm.save_wizard_state(project_id, step, st.session_state.get("chat_messages"))
     st.rerun()
@@ -992,51 +963,47 @@ def _show_context(project_id: str):
                 return i
         return 0
 
-    col1, col2 = st.columns(2)
+    with st.container(border=True):
+        st.markdown("**Proje Ortami**")
+        scale_keys = [k for k, _ in SCALE_OPTIONS]
+        scale = st.radio("Organizasyon Olcegi", scale_keys,
+                         index=_find_index(SCALE_OPTIONS, current.get("scale", "orta")),
+                         format_func=lambda k: dict(SCALE_OPTIONS)[k],
+                         horizontal=True, key="ctx_scale")
+        team_keys = [k for k, _ in TEAM_OPTIONS]
+        team = st.radio("Ekip Deneyimi", team_keys,
+                        index=_find_index(TEAM_OPTIONS, current.get("team", "mid")),
+                        format_func=lambda k: dict(TEAM_OPTIONS)[k],
+                        horizontal=True, key="ctx_team")
+        td_keys = [k for k, _ in TECH_DEBT_OPTIONS]
+        tech_debt = st.radio("Teknik Borc", td_keys,
+                             index=_find_index(TECH_DEBT_OPTIONS, current.get("tech_debt", "greenfield")),
+                             format_func=lambda k: dict(TECH_DEBT_OPTIONS)[k],
+                             horizontal=True, key="ctx_tech_debt")
 
-    with col1:
-        with st.container(border=True):
-            st.markdown("**Proje Ortami**")
-            scale_keys = [k for k, _ in SCALE_OPTIONS]
-            scale = st.radio("Organizasyon Olcegi", scale_keys,
-                             index=_find_index(SCALE_OPTIONS, current.get("scale", "orta")),
-                             format_func=lambda k: dict(SCALE_OPTIONS)[k],
-                             horizontal=True, key="ctx_scale")
-            team_keys = [k for k, _ in TEAM_OPTIONS]
-            team = st.radio("Ekip Deneyimi", team_keys,
-                            index=_find_index(TEAM_OPTIONS, current.get("team", "mid")),
-                            format_func=lambda k: dict(TEAM_OPTIONS)[k],
-                            horizontal=True, key="ctx_team")
-            td_keys = [k for k, _ in TECH_DEBT_OPTIONS]
-            tech_debt = st.radio("Teknik Borc", td_keys,
-                                 index=_find_index(TECH_DEBT_OPTIONS, current.get("tech_debt", "greenfield")),
-                                 format_func=lambda k: dict(TECH_DEBT_OPTIONS)[k],
-                                 horizontal=True, key="ctx_tech_debt")
+    with st.container(border=True):
+        st.markdown("**Domain & Entegrasyon**")
+        if ai_baglam.get("domain_neden") or ai_baglam.get("entegrasyon_neden"):
+            ai_text = "**AI Tespiti**  \n"
+            if ai_baglam.get("domain_neden"):
+                ai_text += f"Domain: {ai_baglam['domain_neden']}  \n"
+            if ai_baglam.get("entegrasyon_neden"):
+                ai_text += f"Entegrasyon: {ai_baglam['entegrasyon_neden']}"
+            st.info(ai_text)
 
-    with col2:
-        with st.container(border=True):
-            st.markdown("**Domain & Entegrasyon**")
-            if ai_baglam.get("domain_neden") or ai_baglam.get("entegrasyon_neden"):
-                ai_text = "**AI Tespiti**  \n"
-                if ai_baglam.get("domain_neden"):
-                    ai_text += f"Domain: {ai_baglam['domain_neden']}  \n"
-                if ai_baglam.get("entegrasyon_neden"):
-                    ai_text += f"Entegrasyon: {ai_baglam['entegrasyon_neden']}"
-                st.info(ai_text)
-
-            dom_keys = [k for k, _ in DOMAIN_OPTIONS]
-            domain = st.radio("Domain Karmasikligi", dom_keys,
-                              index=_find_index(DOMAIN_OPTIONS, current.get("domain", "standart")),
-                              format_func=lambda k: dict(DOMAIN_OPTIONS)[k],
-                              horizontal=True, key="ctx_domain")
-            int_keys = [k for k, _ in INT_OPTIONS]
-            int_density = st.radio("Entegrasyon Yogunlugu", int_keys,
-                                   index=_find_index(INT_OPTIONS, current.get("integration_density", "0-2")),
-                                   format_func=lambda k: dict(INT_OPTIONS)[k],
-                                   horizontal=True, key="ctx_int_density")
-            ent_list = ai_baglam.get("benzersiz_entegrasyonlar", [])
-            if ent_list:
-                st.caption(f"Tespit edilen: {', '.join(ent_list)}")
+        dom_keys = [k for k, _ in DOMAIN_OPTIONS]
+        domain = st.radio("Domain Karmasikligi", dom_keys,
+                          index=_find_index(DOMAIN_OPTIONS, current.get("domain", "standart")),
+                          format_func=lambda k: dict(DOMAIN_OPTIONS)[k],
+                          horizontal=True, key="ctx_domain")
+        int_keys = [k for k, _ in INT_OPTIONS]
+        int_density = st.radio("Entegrasyon Yogunlugu", int_keys,
+                               index=_find_index(INT_OPTIONS, current.get("integration_density", "0-2")),
+                               format_func=lambda k: dict(INT_OPTIONS)[k],
+                               horizontal=True, key="ctx_int_density")
+        ent_list = ai_baglam.get("benzersiz_entegrasyonlar", [])
+        if ent_list:
+            st.caption(f"Tespit edilen: {', '.join(ent_list)}")
 
     # Carpan onizleme
     st.divider()
@@ -1073,19 +1040,6 @@ def _show_context(project_id: str):
         delta_msg = f"max {tables.VIBE_CONTEXT_CAP}" if factor_c >= tables.VIBE_CONTEXT_CAP else None
         m2.metric("Birlesik Carpan (C)", f"{factor_c_capped:.4f}", delta_msg)
 
-    # Hesaplama Parametreleri — kompakt ozet ve duzenleme butonu
-    project_overrides = pm.load_project_params_overrides(project_id) if project_id else None
-    param_col1, param_col2 = st.columns([3, 1])
-    with param_col1:
-        if project_overrides:
-            override_count = len(_count_overrides(project_overrides))
-            st.info(f"⚙ Hesaplama Parametreleri: **{override_count} parametre** projeye ozel override edilmis")
-        else:
-            st.success("⚙ Hesaplama Parametreleri: Varsayilan (global) parametreler kullaniliyor")
-    with param_col2:
-        if st.button("Parametreleri Duzenle", use_container_width=True, key="ctx_edit_params"):
-            _edit_params_dialog()
-
     # OF kapsam bilgisi — hangi parametreler etkili
     categories = st.session_state.categories
     if categories:
@@ -1108,10 +1062,21 @@ def _show_context(project_id: str):
                 f"Baz Efor degisiklikleri sinirli etki yapar."
             )
 
+    # Hesaplama Parametreleri — inline
+    _render_params_inline(project_id)
+
     st.divider()
     btn_col1, btn_col2 = st.columns(2)
     with btn_col1:
         if st.button("Onayla ve Efor Hesapla", type="primary", use_container_width=True):
+            # Duzenlenmis parametreleri otomatik kaydet
+            edited_params = st.session_state.get("_edited_params")
+            edited_global = st.session_state.get("_edited_params_global")
+            if edited_params and edited_global and project_id:
+                project_overrides = extract_overrides(edited_params, edited_global)
+                pm.save_project_params(project_id, project_overrides)
+                merged = merge_params(edited_global, project_overrides)
+                tables.reload_tables(merged)
             st.session_state.project_context = context
             _go_step("calculate", project_id)
     with btn_col2:
@@ -1124,57 +1089,65 @@ def _show_context(project_id: str):
 def _show_calculate(project_id: str):
     st.header("Efor Hesaplama")
 
-    wbs = st.session_state.wbs
-    context = st.session_state.project_context
-    categories = st.session_state.categories
-
-    with st.status("Efor Hesaplama Baslatiliyor...", expanded=True) as status:
-        st.write("Parametreler yukleniyor...")
-        # Global + proje override birlestirilmis parametreleri yukle
-        project_overrides = pm.load_project_params_overrides(project_id) if project_id else None
-        if project_overrides:
-            global_params = load_params()
-            merged_params = merge_params(global_params, project_overrides)
-            tables.reload_tables(merged_params)
-            st.write(f"Projeye ozel {len(_count_overrides(project_overrides))} parametre override aktif")
+    # Rerun'da tekrar hesaplama yapmayi onle
+    if st.session_state.get("_calc_done"):
+        result = st.session_state.effort_result
+        if result:
+            pt = result.get("proje_toplami", {})
+            st.success("Hesaplama Tamamlandi!")
         else:
-            tables.reload_tables()
-        st.write("Teknik Efor Hesaplama (3 Profil)...")
-        result = calculate_effort(wbs, categories, context)
-        st.session_state.effort_result = result
+            st.warning("Hesaplama sonucu bulunamadi.")
+    else:
+        wbs = st.session_state.wbs
+        context = st.session_state.project_context
+        categories = st.session_state.categories
 
-        pt = result.get("proje_toplami", {})
-        a_t = pt.get("a", {}).get("toplam", 0)
-        b_t = pt.get("b", {}).get("toplam", 0)
-        c_t = pt.get("c", {}).get("toplam", 0)
-
-        st.write("Kalite Kontrol...")
-        errors = run_checks(wbs, result)
-        if errors:
-            for e in errors:
-                st.write(f"Uyari: {e}")
-
-        # Sonuclari project_manager_v2'ye kaydet
-        if project_id:
-            st.write("Sonuclar kaydediliyor...")
-            meta = pm.load_meta(project_id)
-            wbs_version = meta.get("active_wbs_version", "v1") if meta else "v1"
-            # Hesaplamada kullanilan (merged) parametreleri kaydet
+        with st.status("Efor Hesaplama Baslatiliyor...", expanded=True) as status:
+            st.write("Parametreler yukleniyor...")
+            project_overrides = pm.load_project_params_overrides(project_id) if project_id else None
             if project_overrides:
-                params = merged_params
+                global_params = load_params()
+                merged_params = merge_params(global_params, project_overrides)
+                tables.reload_tables(merged_params)
+                st.write(f"Projeye ozel {len(_count_overrides(project_overrides))} parametre override aktif")
             else:
-                params = snapshot_params()
-            calc_id = pm.save_calculation(
-                project_id, wbs_version, result, categories, context, params
-            )
-            st.session_state.active_calc_id = calc_id
+                tables.reload_tables()
+            st.write("Teknik Efor Hesaplama (3 Profil)...")
+            result = calculate_effort(wbs, categories, context)
+            st.session_state.effort_result = result
 
-            # Ayrica legacy output dizinine de kaydet
-            _save_legacy_output(result, wbs, categories)
+            pt = result.get("proje_toplami", {})
+            a_t = pt.get("a", {}).get("toplam", 0)
+            b_t = pt.get("b", {}).get("toplam", 0)
+            c_t = pt.get("c", {}).get("toplam", 0)
 
-        status.update(label="Hesaplama Tamamlandi!", state="complete")
+            st.write("Kalite Kontrol...")
+            errors = run_checks(wbs, result)
+            if errors:
+                for e in errors:
+                    st.write(f"Uyari: {e}")
+
+            # Sonuclari project_manager_v2'ye kaydet
+            if project_id:
+                st.write("Sonuclar kaydediliyor...")
+                meta = pm.load_meta(project_id)
+                wbs_version = meta.get("active_wbs_version", "v1") if meta else "v1"
+                if project_overrides:
+                    params = merged_params
+                else:
+                    params = snapshot_params()
+                calc_id = pm.save_calculation(
+                    project_id, wbs_version, result, categories, context, params
+                )
+                st.session_state.active_calc_id = calc_id
+
+                _save_legacy_output(result, wbs, categories)
+
+            status.update(label="Hesaplama Tamamlandi!", state="complete")
+            st.session_state["_calc_done"] = True
 
     # OF kapsam uyarisi
+    categories = st.session_state.categories or {}
     wp_cat = categories.get("wp_kategorileri", {})
     total_deliverables = sum(len(w.get("deliverables", [])) for w in wp_cat.values())
     of_matched = sum(
@@ -1214,13 +1187,9 @@ def _show_calculate(project_id: str):
 
 
 def _save_legacy_output(result: dict, wbs: dict, categories: dict):
-    """Legacy output/ dizinine de kaydet (geriye uyumluluk)."""
+    """Legacy output/ dizinine kaydet."""
     from datetime import datetime
-    from src.csv_writer import (
-        write_wp_details, write_summary, write_notes,
-        write_wbs_details, write_categorization_details,
-        write_context_analysis, write_full_export,
-    )
+    from src.csv_writer import write_full_export
 
     output_dir = Path("output")
     output_dir.mkdir(exist_ok=True)
@@ -1243,20 +1212,9 @@ def _save_legacy_output(result: dict, wbs: dict, categories: dict):
         if ctx:
             with open(dir_path / "project_context.json", "w", encoding="utf-8") as f:
                 json.dump(ctx, f, ensure_ascii=False, indent=2)
-        write_wp_details(result, str(dir_path / f"{safe_name}_wp_detaylari.csv"))
-        write_summary(result, str(dir_path / f"{safe_name}_ozet.csv"))
-        write_notes(result, str(dir_path / f"{safe_name}_notlar.csv"))
-        if wbs:
-            write_wbs_details(wbs, str(dir_path / f"{safe_name}_wbs_yapisi.csv"))
-        if categories:
-            write_categorization_details(categories, str(dir_path / f"{safe_name}_kategorizasyon.csv"))
-            write_context_analysis(categories, result, str(dir_path / f"{safe_name}_baglam.csv"))
-        try:
-            if wbs and categories:
-                write_full_export(wbs, categories, result,
-                                  str(dir_path / f"{safe_name}_tam_export.xlsx"))
-        except ImportError:
-            pass
+        if wbs and categories:
+            write_full_export(wbs, categories, result,
+                              str(dir_path / f"{safe_name}_tam_export.xlsx"))
         st.session_state.output_path = str(dir_path)
     except OSError:
         pass

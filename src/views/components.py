@@ -316,86 +316,35 @@ def render_notes_risks(result: dict):
 
 def render_export_section(result: dict, wbs: dict | None, categories: dict | None,
                           exports_dir: str | None = None):
-    """CSV ve Excel export butonlarini render et."""
+    """Excel export butonunu render et."""
     import tempfile
     from pathlib import Path
-    from src.csv_writer import (
-        write_wp_details, write_summary, write_notes,
-        write_wbs_details, write_categorization_details,
-        write_context_analysis, write_full_export,
-    )
+    from src.csv_writer import write_full_export
 
     project_name = result.get("tahmin_ozeti", {}).get("proje_adi", "proje")
     safe_name = project_name.lower().replace(" ", "_")[:20] if project_name else "proje"
 
-    def _get_file_bytes(writer_fn, writer_args, filename_suffix, file_ext=".csv"):
-        if exports_dir:
-            op = Path(exports_dir)
-            for f in op.glob(f"*{filename_suffix}"):
-                return f.read_bytes()
-        with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as tmp:
-            writer_fn(*writer_args, tmp.name)
-            return Path(tmp.name).read_bytes()
-
     with st.container(border=True):
         st.markdown("**Cikti Indir**")
-        tab_csv, tab_excel = st.tabs(["CSV Dosyalari", "Excel Export"])
+        if wbs and categories:
+            def _get_xlsx_bytes():
+                if exports_dir:
+                    op = Path(exports_dir)
+                    for f in op.glob("*_tam_export.xlsx"):
+                        return f.read_bytes()
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
+                    write_full_export(wbs, categories, result, tmp.name)
+                    return Path(tmp.name).read_bytes()
 
-        with tab_csv:
-            csv_col1, csv_col2, csv_col3 = st.columns(3)
-            with csv_col1:
-                data = _get_file_bytes(write_wp_details, [result], "_wp_detaylari.csv")
-                st.download_button("WP Detaylari", data,
-                                   f"{safe_name}_wp_detaylari.csv", "text/csv",
-                                   use_container_width=True)
-            with csv_col2:
-                data = _get_file_bytes(write_summary, [result], "_ozet.csv")
-                st.download_button("Ozet", data,
-                                   f"{safe_name}_ozet.csv", "text/csv",
-                                   use_container_width=True)
-            with csv_col3:
-                data = _get_file_bytes(write_notes, [result], "_notlar.csv")
-                st.download_button("Notlar", data,
-                                   f"{safe_name}_notlar.csv", "text/csv",
-                                   use_container_width=True)
-
-            csv_col4, csv_col5, csv_col6 = st.columns(3)
-            with csv_col4:
-                if wbs:
-                    data = _get_file_bytes(write_wbs_details, [wbs], "_wbs_yapisi.csv")
-                    st.download_button("WBS Yapisi", data,
-                                       f"{safe_name}_wbs_yapisi.csv", "text/csv",
-                                       use_container_width=True)
-            with csv_col5:
-                if categories:
-                    data = _get_file_bytes(write_categorization_details, [categories], "_kategorizasyon.csv")
-                    st.download_button("Kategorizasyon", data,
-                                       f"{safe_name}_kategorizasyon.csv", "text/csv",
-                                       use_container_width=True)
-            with csv_col6:
-                if categories:
-                    data = _get_file_bytes(write_context_analysis, [categories, result], "_baglam.csv")
-                    st.download_button("Baglam Analizi", data,
-                                       f"{safe_name}_baglam.csv", "text/csv",
-                                       use_container_width=True)
-
-        with tab_excel:
-            if wbs and categories:
-                try:
-                    xlsx_data = _get_file_bytes(
-                        write_full_export, [wbs, categories, result],
-                        "_tam_export.xlsx", ".xlsx"
-                    )
-                    st.download_button(
-                        "Tam Export (6 Sheet)", xlsx_data,
-                        f"{safe_name}_tam_export.xlsx",
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        use_container_width=True,
-                    )
-                except ImportError:
-                    st.caption("Excel export icin: `pip install openpyxl`")
-            else:
-                st.caption("Excel export icin WBS ve kategorizasyon gerekli")
+            xlsx_data = _get_xlsx_bytes()
+            st.download_button(
+                "Excel Indir (6 Sheet)", xlsx_data,
+                f"{safe_name}_tam_export.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True,
+            )
+        else:
+            st.caption("Excel export icin WBS ve kategorizasyon gerekli")
 
 
 # ── Helpers ─────────────────────────────────────────────────────────────────

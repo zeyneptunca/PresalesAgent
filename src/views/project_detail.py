@@ -505,17 +505,10 @@ def _show_results_tab(meta: dict, project_id: str):
 
     # Aksiyonlar
     st.divider()
-    act_col1, act_col2 = st.columns(2)
-    with act_col1:
-        if st.button("Tekrar Hesapla", use_container_width=True, key="recalc_btn"):
-            st.session_state.view_mode = "wizard"
-            st.session_state.wizard_step = "context"
-            st.rerun()
-    with act_col2:
-        if st.button("Baglam Degistir", use_container_width=True, key="change_ctx_btn"):
-            st.session_state.view_mode = "wizard"
-            st.session_state.wizard_step = "context"
-            st.rerun()
+    if st.button("Tekrar Hesapla", use_container_width=True, key="recalc_btn"):
+        st.session_state.view_mode = "wizard"
+        st.session_state.wizard_step = "context"
+        st.rerun()
 
 
 def _show_calc_params(calc_data: dict, calc_id: str):

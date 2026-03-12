@@ -4,7 +4,7 @@ import streamlit as st
 
 from src.project_manager_v2 import (
     list_projects, load_meta, load_wbs, load_latest_calculation,
-    load_project_params_overrides,
+    load_project_params_overrides, delete_project,
 )
 from src.param_manager import load_params, merge_params
 import src.effort_tables as tables
@@ -126,9 +126,36 @@ def render_sidebar():
                             unsafe_allow_html=True,
                         )
                     with col_btn:
-                        if st.button(pname, key=f"sb_proj_{pid}",
-                                     use_container_width=True, help=info):
-                            _switch_to_project(pid)
+                        btn_col, del_col = st.columns([0.85, 0.15], gap="small")
+                        with btn_col:
+                            if st.button(pname, key=f"sb_proj_{pid}",
+                                         use_container_width=True, help=info):
+                                _switch_to_project(pid)
+                        with del_col:
+                            if st.button("×", key=f"sb_del_{pid}",
+                                         use_container_width=True, help="Sil"):
+                                st.session_state[f"_confirm_delete_{pid}"] = True
+                                st.rerun()
+
+                    # Silme onay
+                    if st.session_state.get(f"_confirm_delete_{pid}"):
+                        st.warning(f"**{pname}** silinecek. Emin misiniz?")
+                        c1, c2 = st.columns(2)
+                        with c1:
+                            if st.button("Evet, Sil", key=f"sb_confirm_del_{pid}",
+                                         type="primary", use_container_width=True):
+                                delete_project(pid)
+                                st.session_state.pop(f"_confirm_delete_{pid}", None)
+                                if active_project_id == pid:
+                                    st.session_state.active_project_id = None
+                                    st.session_state.view_mode = "dashboard"
+                                list_projects.clear()
+                                st.rerun()
+                        with c2:
+                            if st.button("Iptal", key=f"sb_cancel_del_{pid}",
+                                         use_container_width=True):
+                                st.session_state.pop(f"_confirm_delete_{pid}", None)
+                                st.rerun()
 
         # ────────────────────── AYARLAR ──────────────────────
         st.markdown('<div class="sb-spacer-lg"></div>', unsafe_allow_html=True)
