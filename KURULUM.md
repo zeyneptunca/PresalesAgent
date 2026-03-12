@@ -48,17 +48,46 @@ cd PresalesAgent
 
 > **git yuklenmemisse:** `xcode-select --install` komutunu calistirin, acilan pencerede "Install" deyin. Bittikten sonra `git clone` komutunu tekrar calistirin.
 
-### Adim 4: Sanal Ortam Olustur ve Bagimliiklari Yukle
+### Adim 4: Sanal Ortam (Virtual Environment) Olustur
 
+Sanal ortam, projenin ihtiyac duydugu kutuphaneleri sisteminizin geri kalanindan izole tutar.
+Boylece baska projelerle karisma olmaz.
+
+**4a) Sanal ortami olusturun:**
 ```bash
 python3 -m venv .venv
+```
+Bu komut, `PresalesAgent` klasorunun icine `.venv` adinda gizli bir klasor olusturur.
+Biraz bekleyin, 10-20 saniye surebilir.
+
+**4b) Sanal ortami aktif edin:**
+```bash
 source .venv/bin/activate
+```
+Basarili olursa satir basinda `(.venv)` yazisi gorursunuz. Ornek:
+```
+(.venv) kullanici@MacBook PresalesAgent %
+```
+
+> **(.venv) yazisini gormuyorsaniz**, bir sonraki adima gecmeyin. Komutu tekrar calistirin.
+
+### Adim 5: Gerekli Kutuphaneleri (Streamlit, Anthropic vb.) Yukle
+
+```bash
 pip install -r requirements.txt
 ```
 
-> Basarili olursa terminal'de `(.venv)` yazisi gorursunuz. Bu, sanal ortamin aktif oldugu anlamina gelir.
+Bu komut, uygulamanin ihtiyac duydugu tum kutuphaneleri otomatik olarak yukler:
+- **streamlit** — web arayuzu
+- **anthropic** — Claude AI baglantisi
+- **PyMuPDF** — PDF okuma
+- **openpyxl** — Excel dosyasi olusturma
+- ve diger bagimlliklar...
 
-### Adim 5: API Key Ayarla
+Yukleme 1-3 dakika surebilir. Ekranda bircok satir akacak, bu normal.
+`Successfully installed ...` yazisini gordugunuzde tamamdir.
+
+### Adim 6: API Key Ayarla
 
 PresalesAgent, Claude AI kullanir. Bunun icin bir API anahtari gerekir.
 
@@ -70,25 +99,26 @@ echo 'ANTHROPIC_API_KEY=sk-ant-BURAYA_ANAHTARI_YAPISTIRINIZ' > .env
 
 > `sk-ant-BURAYA_ANAHTARI_YAPISTIRINIZ` kismini gercek anahtarla degistirin.
 
-### Adim 6: Uygulamayi Calistir
+### Adim 7: Uygulamayi Calistir
 
 ```bash
-source .venv/bin/activate
 streamlit run app.py
 ```
 
 Tarayicinizda otomatik olarak acilacak: **http://localhost:8501**
 
-### Adim 7: Sonraki Kullanimlarda
+> Eger sanal ortam aktif degilse (satir basinda `(.venv)` yoksa), once `source .venv/bin/activate` calistirin.
 
-Her seferinde sadece 2 komut:
+### Adim 8: Sonraki Kullanimlarda
+
+Bilgisayarinizi kapatip actiktan sonra, her seferinde bu 3 komutu sirayla yazin:
 ```bash
 cd ~/Desktop/PresalesAgent
 source .venv/bin/activate
 streamlit run app.py
 ```
 
-Kapatmak icin: Terminal'de `Ctrl + C` basin.
+Uygulamayi kapatmak icin: Terminal'de `Ctrl + C` basin.
 
 ---
 
@@ -128,17 +158,45 @@ git clone https://github.com/zeyneptunca/PresalesAgent.git
 cd PresalesAgent
 ```
 
-### Adim 5: Sanal Ortam Olustur ve Bagimliliklari Yukle
+### Adim 5: Sanal Ortam (Virtual Environment) Olustur
 
+Sanal ortam, projenin ihtiyac duydugu kutuphaneleri sisteminizin geri kalanindan izole tutar.
+
+**5a) Sanal ortami olusturun:**
 ```cmd
 python -m venv .venv
+```
+Bu komut, `PresalesAgent` klasorunun icine `.venv` adinda bir klasor olusturur.
+Biraz bekleyin, 10-30 saniye surebilir.
+
+**5b) Sanal ortami aktif edin:**
+```cmd
 .venv\Scripts\activate
+```
+Basarili olursa satir basinda `(.venv)` yazisi gorursunuz. Ornek:
+```
+(.venv) C:\Users\Ahmet\Desktop\PresalesAgent>
+```
+
+> **(.venv) yazisini gormuyorsaniz**, bir sonraki adima gecmeyin. Komutu tekrar calistirin.
+
+### Adim 6: Gerekli Kutuphaneleri (Streamlit, Anthropic vb.) Yukle
+
+```cmd
 pip install -r requirements.txt
 ```
 
-> Basarili olursa satir basinda `(.venv)` yazisi gorursunuz.
+Bu komut, uygulamanin ihtiyac duydugu tum kutuphaneleri otomatik olarak yukler:
+- **streamlit** — web arayuzu
+- **anthropic** — Claude AI baglantisi
+- **PyMuPDF** — PDF okuma
+- **openpyxl** — Excel dosyasi olusturma
+- ve diger bagimlliklar...
 
-### Adim 6: API Key Ayarla
+Yukleme 1-3 dakika surebilir. Ekranda bircok satir akacak, bu normal.
+`Successfully installed ...` yazisini gordugunuzde tamamdir.
+
+### Adim 7: API Key Ayarla
 
 **API anahtarinizi Zeynep'ten isteyin.** Aldiginizda:
 
@@ -149,25 +207,26 @@ ANTHROPIC_API_KEY=sk-ant-BURAYA_ANAHTARI_YAPISTIRINIZ
 "Farkli Kaydet" ile **PresalesAgent** klasorune `.env` adinda kaydedin.
 (Dosya turu: "Tum Dosyalar" secin, yoksa `.env.txt` olarak kaydeder)
 
-### Adim 7: Uygulamayi Calistir
+### Adim 8: Uygulamayi Calistir
 
 ```cmd
-.venv\Scripts\activate
 streamlit run app.py
 ```
 
 Tarayicinizda otomatik olarak acilacak: **http://localhost:8501**
 
-### Adim 8: Sonraki Kullanimlarda
+> Eger sanal ortam aktif degilse (satir basinda `(.venv)` yoksa), once `.venv\Scripts\activate` calistirin.
 
-Her seferinde:
+### Adim 9: Sonraki Kullanimlarda
+
+Bilgisayarinizi kapatip actiktan sonra, her seferinde bu 3 komutu sirayla yazin:
 ```cmd
 cd %USERPROFILE%\Desktop\PresalesAgent
 .venv\Scripts\activate
 streamlit run app.py
 ```
 
-Kapatmak icin: Komut satirinda `Ctrl + C` basin.
+Uygulamayi kapatmak icin: Komut satirinda `Ctrl + C` basin.
 
 ---
 
