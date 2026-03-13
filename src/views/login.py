@@ -47,14 +47,18 @@ _LOGIN_CSS = """
     margin: 0 auto;
 }
 .login-card-wrapper h2 {
-    color: #1a2744;
-    font-size: 1.6rem;
-    margin-bottom: 0.2rem;
+    color: #1a2744 !important;
+    font-size: 1.6rem !important;
+    margin-bottom: 0.2rem !important;
 }
+.login-card-wrapper p,
 .login-card-wrapper .subtitle {
-    color: #888;
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
+    color: #888 !important;
+    font-size: 0.9rem !important;
+    margin-bottom: 1.5rem !important;
+}
+.login-card-wrapper p b {
+    color: #1a2744 !important;
 }
 
 /* Kart icindeki form input'lari */
@@ -194,7 +198,7 @@ def show_login():
     # ────── SAG: Beyaz Kart ──────
     with col_right:
         # Bosluk — karti dikeyde ortala
-        st.markdown("<div style='height: 6vh;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height: 8vh;'></div>", unsafe_allow_html=True)
 
         # Kart acilis
         st.markdown('<div class="login-card-wrapper">', unsafe_allow_html=True)
@@ -287,9 +291,9 @@ def _show_code_step():
 
     with st.form("login_code_form"):
         code = st.text_input(
-            "6 Haneli Kod",
-            max_chars=6,
-            placeholder="123456",
+            "Dogrulama Kodu",
+            max_chars=8,
+            placeholder="12345678",
             key="login_code_input",
         )
         submitted = st.form_submit_button(
