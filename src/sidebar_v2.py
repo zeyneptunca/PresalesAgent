@@ -182,6 +182,50 @@ def render_sidebar():
                 st.session_state.view_mode = "params"
                 st.rerun()
 
+        # Admin ise: Kullanici Yonetimi butonu
+        auth_user = st.session_state.get("auth_user")
+        if auth_user and auth_user.get("is_admin"):
+            is_admin_active = (view_mode == "admin_users")
+            if is_admin_active:
+                st.markdown(
+                    '<div class="sb-settings-active">'
+                    '<span class="sb-settings-icon">👥</span>'
+                    '<span>Kullanici Yonetimi</span>'
+                    '</div>',
+                    unsafe_allow_html=True,
+                )
+            else:
+                if st.button("👥  Kullanici Yonetimi", use_container_width=True,
+                             key="sb_admin_users_btn"):
+                    st.session_state.view_mode = "admin_users"
+                    st.rerun()
+
+        # ────────────────────── KULLANICI BILGISI ──────────────────────
+        st.markdown('<div class="sb-spacer-lg"></div>', unsafe_allow_html=True)
+
+        if auth_user:
+            email_display = auth_user.get("email", "")
+            role_label = "Admin" if auth_user.get("is_admin") else ""
+            role_html = (
+                f'<div style="font-size: 0.75rem; color: #e67e22;">{role_label}</div>'
+                if role_label else ""
+            )
+            st.markdown(
+                f'<div style="padding: 0.5rem 0; border-top: 1px solid #eee;">'
+                f'<div style="font-size: 0.8rem; color: #666;">Giris yapan:</div>'
+                f'<div style="font-size: 0.85rem; font-weight: 500;">{email_display}</div>'
+                f'{role_html}'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+            if st.button("Cikis Yap", use_container_width=True, key="sb_logout_btn"):
+                st.session_state.auth_user = None
+                # Login state'i de temizle
+                for key in list(st.session_state.keys()):
+                    if key.startswith("login_"):
+                        del st.session_state[key]
+                st.rerun()
+
 
 def _render_wizard_nav():
     """Aktif proje altinda wizard adim navigasyonu — tek HTML blogu."""

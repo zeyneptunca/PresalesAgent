@@ -1,0 +1,13 @@
+{
+  "admin_emails": [
+    "zeynep.tunca@kocsistem.com.tr"
+  ],
+  "allowed_users": [
+    {
+      "email": "zeynep.tunca@kocsistem.com.tr",
+      "name": "Zeynep Tunca",
+      "role": "admin",
+      "added_at": "2026-03-13"
+    }
+  ]
+}

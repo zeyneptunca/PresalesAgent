@@ -13,7 +13,11 @@ def _load_env():
                 line = line.strip()
                 if line and not line.startswith("#") and "=" in line:
                     key, _, value = line.partition("=")
-                    os.environ.setdefault(key.strip(), value.strip().strip("'\""))
+                    key = key.strip()
+                    value = value.strip().strip("'\"")
+                    # Bos deger varsa .env'deki degerle degistir
+                    if value and not os.environ.get(key):
+                        os.environ[key] = value
 
 _load_env()
 
@@ -24,6 +28,7 @@ from src.views.dashboard import show_dashboard
 from src.views.wizard import show_wizard
 from src.views.project_detail import show_project_detail
 from src.views.params_view import show_params
+from src.views.login import show_login
 
 st.set_page_config(page_title="PresalesAgent", layout="wide")
 inject_custom_css()
@@ -68,15 +73,27 @@ def main():
     if not ok:
         st.error(msg)
         return
-    else:
-        st.sidebar.caption(msg)
+
+    # ── Auth Gate ──────────────────────────────────────────────────────
+    if "auth_user" not in st.session_state:
+        st.session_state.auth_user = None
+
+    if st.session_state.auth_user is None:
+        show_login()
+        return
+    # ──────────────────────────────────────────────────────────────────
+
+    st.sidebar.caption(msg)
 
     init_state()
     render_sidebar()
 
     view_mode = st.session_state.view_mode
 
-    if view_mode == "dashboard":
+    if view_mode == "admin_users":
+        from src.views.admin_users import show_admin_users
+        show_admin_users()
+    elif view_mode == "dashboard":
         show_dashboard()
     elif view_mode == "wizard":
         show_wizard()

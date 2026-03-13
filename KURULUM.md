@@ -530,22 +530,68 @@ streamlit run app.py
 
 ## Guncellemeleri Alma
 
-Zeynep uygulamaya yeni ozellikler eklediginde, su komutlarla guncelleyebilirsiniz:
+Zeynep uygulamaya yeni ozellikler eklediginde, su komutlarla guncelleyebilirsiniz.
+Her komutu tek tek yazin ve Enter'a basin.
 
-**Mac:**
+### Mac:
+
+**Komut 1 — Proje klasorune git:**
 ```bash
 cd ~/Desktop/PresalesAgent
-git pull origin main
 ```
 
-**Windows:**
+**Komut 2 — Sanal ortami aktif et:**
+```bash
+source .venv/bin/activate
+```
+> Satir basinda `(.venv)` yazisini gormeniz gerekiyor.
+
+**Komut 3 — Son kodu cek:**
+```bash
+git pull
+```
+> Ekranda degisen dosyalar listelenecek. "Already up to date." yazarsa zaten guncelsiniz.
+
+**Komut 4 — Yeni kutuphaneleri yukle:**
+```bash
+pip install -r requirements.txt
+```
+> Bu komut her seferinde calistirilmali. Yeni kutuphane yoksa birsey olmaz, varsa otomatik yuklenir.
+
+**Komut 5 — Uygulamayi baslat:**
+```bash
+streamlit run app.py
+```
+
+### Windows:
+
+**Komut 1 — Proje klasorune git:**
 ```cmd
 cd %USERPROFILE%\Desktop\PresalesAgent
-git pull origin main
 ```
 
-> Eger `pip install -r requirements.txt` ile yeni kutuphane eklenmisse,
-> guncelleme sonrasi bu komutu da tekrar calistirmaniz gerekebilir (Zeynep size soyler).
+**Komut 2 — Sanal ortami aktif et:**
+```cmd
+.venv\Scripts\activate
+```
+> Satir basinda `(.venv)` yazisini gormeniz gerekiyor.
+
+**Komut 3 — Son kodu cek:**
+```cmd
+git pull
+```
+> Ekranda degisen dosyalar listelenecek. "Already up to date." yazarsa zaten guncelsiniz.
+
+**Komut 4 — Yeni kutuphaneleri yukle:**
+```cmd
+pip install -r requirements.txt
+```
+> Bu komut her seferinde calistirilmali. Yeni kutuphane yoksa birsey olmaz, varsa otomatik yuklenir.
+
+**Komut 5 — Uygulamayi baslat:**
+```cmd
+streamlit run app.py
+```
 
 ---
 

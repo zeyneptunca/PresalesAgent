@@ -1,204 +1,210 @@
-# Efor Tahmin Agent — Claude Code
+# PresalesAgent — Claude Code
 
 ## Proje Özeti
-Kurumsal yazılım projelerinin efor tahminini uçtan uca yapan konuşmaya dayalı agent.
-PDF analiz dokümanı → WBS üretimi → Kullanıcı onayı → Efor hesaplama → CSV çıktı.
+Kurumsal yazılım projelerinin efor tahminini uçtan uca yapan Streamlit web uygulaması.
+PDF analiz dokümanı → WBS üretimi (AI) → Parametre ayarı → Efor hesaplama (Python) → Excel çıktı.
 
-Her iki ana adımda da (WBS üretimi ve Efor hesaplama) Claude API kullanılır.
-Karar ağacı dokümanı efor hesaplama adımında system prompt olarak gönderilir.
-Bu yaklaşım Copilot Studio'daki çalışma biçiminin aynısıdır:
-  Copilot Studio Instructions  →  Claude API system prompt
-  Copilot Studio Knowledge Base →  karar_agaci_v12.md (system prompt'a eklenir)
-  Copilot Studio Input          →  WBS JSON (user message)
+WBS üretimi ve deliverable kategorizasyonunda Claude/GPT API kullanılır.
+Efor hesaplama tamamen deterministik Python motoruyla yapılır.
+Hesaplama sonrası interaktif AI danışman (chat) ile sonuçlar sorgulanabilir.
 
 ## Proje Yapısı
 ```
-efor-tahmin/
-├── CLAUDE.md                         # Bu dosya
-├── karar_agaci_v12.md                # Efor hesaplama kuralları (AI'a prompt olarak gider)
-├── requirements.txt                  # pymupdf, anthropic
+PresalesAgent/
+├── app.py                           # Streamlit entry point & router
+├── requirements.txt                 # PyMuPDF, anthropic, openai, streamlit, openpyxl, json-repair
+├── pyproject.toml                   # Paket metadata (v1.1.0)
+├── Dockerfile                       # Docker image (Python 3.12-slim, port 8501)
+├── CLAUDE.md                        # Bu dosya
+├── KURULUM.md                       # Teknik olmayan kullanıcılar için kurulum kılavuzu
+├── karar_agaci_v12.md               # Efor hesaplama kuralları referans dokümanı (~92KB)
+├── .env                             # API key (git'e eklenmez)
+├── .streamlit/config.toml           # Streamlit tema & server ayarları
+├── config/
+│   └── effort_params.json           # Tüm hesaplama parametreleri (baz değerler, çarpanlar vb.)
 ├── src/
 │   ├── __init__.py
-│   ├── main.py                       # Ana akış — konuşma döngüsü
-│   ├── pdf_reader.py                 # PDF → metin çıkarma
-│   ├── wbs_generator.py              # PDF metin → Claude API → WBS JSON
-│   ├── wbs_editor.py                 # WBS düzenleme komutları
-│   ├── wbs_display.py                # WBS → konsol tablo gösterim
-│   ├── effort_calculator.py          # WBS + karar ağacı → Claude API → Efor JSON
-│   ├── csv_writer.py                 # Efor JSON → 3 CSV dosyası
-│   └── quality_check.py              # CSV öncesi doğrulama
-├── uploads/                          # Kullanıcı PDF'leri
-├── wbs/                              # Üretilen WBS JSON'ları
-└── output/                           # Üretilen CSV çıktıları
+│   ├── llm_client.py                # LLM soyutlama katmanı (Anthropic + OpenAI)
+│   ├── pdf_reader.py                # PDF → metin çıkarma (PyMuPDF)
+│   ├── wbs_generator.py             # PDF metin → LLM → WBS JSON
+│   ├── wbs_editor.py                # WBS düzenleme fonksiyonları
+│   ├── categorizer.py               # Deliverable kategorizasyonu (AI destekli)
+│   ├── effort_engine.py             # Saf Python efor hesaplama motoru
+│   ├── effort_tables.py             # config/effort_params.json → Python modül değişkenleri
+│   ├── param_manager.py             # Global & proje-seviye parametre yönetimi
+│   ├── project_manager_v2.py        # Versiyonlu proje CRUD & state yönetimi
+│   ├── csv_writer.py                # Excel (.xlsx) export (openpyxl)
+│   ├── quality_check.py             # Hesaplama sonrası doğrulama
+│   ├── chat_agent.py                # AI danışman (sonuçları sorgulama)
+│   ├── sidebar_v2.py                # Sidebar navigasyon & proje listesi
+│   ├── ui_theme.py                  # Custom CSS injection
+│   ├── cli.py                       # CLI giriş noktası (opsiyonel)
+│   └── views/
+│       ├── __init__.py
+│       ├── dashboard.py             # Ana ekran — yeni proje oluşturma
+│       ├── wizard.py                # 5 adımlı proje sihirbazı
+│       ├── project_detail.py        # Tamamlanmış proje görüntüleme
+│       ├── params_view.py           # Global parametre editörü
+│       └── components.py            # Paylaşılan UI bileşenleri & grafikler
+├── projects/                        # Proje verileri (versiyonlu)
+│   └── {project_id}/
+│       ├── project.json             # Meta: ad, tarih, wizard durumu
+│       ├── scope/extracted_text.txt  # PDF'den çıkarılmış metin
+│       ├── wbs/v1.json, v2.json...  # Versiyonlu WBS dosyaları
+│       └── calculations/calc_{ts}/  # Hesaplama geçmişi
+├── output/                          # Üretilen Excel dosyaları
+└── uploads/                         # Kullanıcı PDF'leri (geçici)
 ```
 
 ## Teknoloji
 - **Runtime:** Python 3.11+
-- **PDF okuma:** pymupdf (fitz)
-- **API:** Anthropic Python SDK
-- **Model:** claude-opus-4-6 (hem WBS üretimi hem efor hesaplama)
-- **API Key:** Ortam değişkeni `ANTHROPIC_API_KEY`
-- **CSV:** Python csv modülü (built-in)
-
-## Geliştirme Sırası
-```
-Adım 1: Proje iskeletini oluştur (dizinler, requirements.txt)
-Adım 2: PDF okuma modülü
-Adım 3: WBS üretim modülü (Claude API çağrısı #1)
-Adım 4: WBS gösterim ve düzenleme
-Adım 5: Efor hesaplama modülü (Claude API çağrısı #2)
-Adım 6: CSV çıktı üretimi
-Adım 7: Kalite kontrol
-Adım 8: Ana akış (main.py — konuşma döngüsü)
-```
+- **UI:** Streamlit (wide layout, custom tema)
+- **PDF okuma:** PyMuPDF (fitz)
+- **LLM:** Anthropic SDK + OpenAI SDK (llm_client.py ile soyutlanmış)
+- **Modeller:** claude-opus-4-6 / gpt-4.1 (heavy), claude-sonnet-4-6 / gpt-4o (light)
+- **LLM Seçimi:** `LLM_PROVIDER` ortam değişkeni (`anthropic` veya `openai`)
+- **Excel:** openpyxl
+- **JSON onarım:** json-repair (bozuk AI yanıtları için)
+- **Container:** Docker (python:3.12-slim, port 8501)
 
 ---
 
-# BÖLÜM 1: MİMARİ — İKİ API ÇAĞRISI
-
-Agent'ın tamamı 2 Claude API çağrısı etrafında döner:
+# BÖLÜM 1: MİMARİ
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                    API ÇAĞRISI #1: WBS                    │
-│  system: WBS_SYSTEM_PROMPT (Bölüm 2'de)                  │
+│               LLM ÇAĞRISI #1: WBS ÜRETİMİ               │
+│  wbs_generator.py → call_llm(tier="heavy")               │
+│  system: WBS_SYSTEM_PROMPT                               │
 │  user:   PDF'den çıkarılmış metin                        │
 │  çıktı:  WBS JSON                                        │
 └──────────────────────────────────────────────────────────┘
                          ↓
-              Kullanıcı düzenler / onaylar
+              Kullanıcı UI'da düzenler / onaylar
                          ↓
 ┌──────────────────────────────────────────────────────────┐
-│                  API ÇAĞRISI #2: EFOR                     │
-│  system: karar_agaci_v12.md + EFOR_SYSTEM_PROMPT          │
+│           LLM ÇAĞRISI #2: KATEGORİZASYON                 │
+│  categorizer.py → call_llm(tier="heavy")                 │
+│  system: CATEGORIZATION_PROMPT                           │
 │  user:   Onaylanmış WBS JSON                             │
-│  çıktı:  Efor hesaplama JSON                             │
+│  çıktı:  Kategorizasyon JSON                             │
+│  (deliverable→kategori, OF eşleşme, reuse, bağlam)      │
 └──────────────────────────────────────────────────────────┘
                          ↓
-              JSON → 3 CSV dosyası (algoritmik)
-```
-
-**Önemli:** Efor hesaplama sırasında AI, karar ağacı dokümanını prompt olarak alır
-ve tüm kuralları (baz değerler, çarpanlar, faz formülleri, OneFrame eşleştirme vb.)
-buna göre uygular. Copilot Studio'daki çalışma biçiminin aynısıdır, ancak:
-- 8000 karakter sınırı YOK — karar ağacının tamamı gönderilir
-- Çıktı JSON — sonra programatik olarak CSV'ye dönüştürülür
-- Kararsız durumlarda agent kullanıcıya soru sorabilir
-
----
-
-# BÖLÜM 2: KONUŞMA AKIŞI
-
-```
-[BAŞLA] → PDF_BEKLE → WBS_URET → WBS_GOSTER
-                                      ↓
-                         ┌─── DUZENLE ←──┐
-                         │       ↓        │
-                         │  GUNCELLENDI ──┘
+┌──────────────────────────────────────────────────────────┐
+│             PARAMETRE AYARI (UI)                          │
+│  config/effort_params.json → UI editör                   │
+│  Proje-seviye override desteği                           │
+│  AI'ın tespit ettiği bağlam değerleri önerilir           │
+└──────────────────────────────────────────────────────────┘
                          ↓
-                    ONAYLA → EFOR_HESAPLA → CSV_URET → [BİTTİ]
+┌──────────────────────────────────────────────────────────┐
+│          EFOR HESAPLAMA (Saf Python)                      │
+│  effort_engine.calculate_effort(wbs, categories, params) │
+│  AI çağrısı YOK — deterministik hesaplama                │
+│  çıktı: Efor JSON (3 profil: A, B, C)                   │
+└──────────────────────────────────────────────────────────┘
+                         ↓
+              Excel export + AI danışman (opsiyonel)
 ```
 
-**PDF_BEKLE:**
-"Analiz dokümanınızı uploads/ dizinine koyun ve dosya adını söyleyin."
+**3 LLM çağrısı:**
+1. **WBS üretimi** (heavy) — PDF'den yapısal kırılım
+2. **Kategorizasyon** (heavy) — her deliverable'ı 8 kategoriden birine ata + OF eşleştirme + reuse tespiti + bağlam analizi
+3. **Chat danışman** (light, opsiyonel) — sonuçları sorgulama
 
-**WBS_URET:**
-PDF metnini Claude API'ye gönder (API çağrısı #1). JSON parse et, wbs/ altına kaydet.
-
-**WBS_GOSTER:**
-Tablo olarak göster. "X modül, Y WP. Değişiklik veya onay?"
-
-**DUZENLE (döngü):**
-Kullanıcı: "WP-003 complexity → high", "WP-005 sil", "deliverable ekle" vb.
-Her değişiklik sonrası tablo tekrar gösterilir.
-
-**ONAYLA:**
-"onay/tamam/devam/hesapla" → efor hesaplamaya geç.
-
-**EFOR_HESAPLA:**
-karar_agaci_v12.md + efor prompt'unu system olarak, WBS JSON'u user olarak gönder
-(API çağrısı #2). Dönen JSON'u parse et.
-
-Eğer AI kararsız kalırsa (ör: kategori belirsiz), kullanıcıya soru sorar:
-"WP-005 Veri Listeleme Grid — bu deliverable'ı COMPLEX_UI mi SIMPLE_UI mı 
-kategorize edeyim? 5 farklı kaynaktan normalize gerekiyor."
-Cevap alınca hesaplamayı tamamlar.
-
-**CSV_URET:**
-Efor JSON → 3 CSV dosyası. Özet göster. "Başka proje?"
+**Efor hesaplama AI ile yapılmaz.** Kategorizasyon sonuçları + parametreler →
+`effort_engine.py` tarafından deterministik olarak hesaplanır.
+Aynı WBS + aynı kategoriler + aynı parametreler → her zaman aynı sonuç.
 
 ---
 
-# BÖLÜM 3: API ÇAĞRISI #1 — WBS ÜRETİMİ
+# BÖLÜM 2: WIZARD AKIŞI (5 ADIM)
 
-## wbs_generator.py
+```
+[Dashboard] → Yeni Proje → SCOPE → WBS_EDIT ──→ CONTEXT → CALCULATE → RESULTS
+                             ↓        ↓      ↓       ↓          ↓           ↓
+                          PDF yükle  AI WBS  AI     Parametre   Python      Grafik +
+                          metin çık  düzenle Kateg. ayarla      hesapla     Excel
+```
 
+### Adım 1: Scope (PDF Yükleme)
+- Kullanıcı PDF yükler → `pdf_reader.read_pdf()` → metin, sayfa sayısı, kelime sayısı
+- Metin `projects/{id}/scope/extracted_text.txt` olarak kaydedilir
+
+### Adım 2: WBS Edit (AI + Manuel Düzenleme)
+- PDF metni → `wbs_generator.generate_wbs()` → **LLM çağrısı #1** (heavy tier) → WBS JSON
+- WBS tablo olarak gösterilir: wp_id | wp_adi | complexity | deliverable_sayisi
+- Düzenleme: complexity değiştir, deliverable ekle/sil, WP ekle/sil
+- Her değişiklik yeni versiyon oluşturur (v1, v2, v3...)
+- Kullanıcı "Onayla ve Devam Et" dediğinde → **LLM çağrısı #2** (heavy tier):
+  `categorizer.categorize_wbs(wbs)` otomatik çalışır
+- Bu çağrı her deliverable'ı 8 kategoriden birine atar, OF eşleştirmesi yapar,
+  reuse gruplarını tespit eder ve bağlam analizi (domain, entegrasyon yoğunluğu) çıkarır
+- AI'ın tespit ettiği bağlam değerleri bir sonraki adımda önerilir
+
+### Adım 3: Context (Parametre Ayarı)
+- `config/effort_params.json` varsayılan değerlerle yüklenir
+- AI kategorizasyonundan gelen bağlam önerileri (domain, entegrasyon yoğunluğu) gösterilir
+- Kullanıcı proje-seviye override yapabilir (baz eforlar, çarpanlar, faz yüzdeleri vb.)
+- Değişiklikler proje snapshot'ı olarak kaydedilir
+
+### Adım 4: Calculate (Efor Hesaplama)
+- `effort_engine.calculate_effort(wbs, categories, params)` → saf Python hesaplama
+- Kategorizasyon sonuçlarını (deliverable→kategori, OF eşleşme, reuse) kullanır
+- 3 profil: A (Geleneksel), B (Copilot+Claude), C (VibeCoding)
+- Sonuç `projects/{id}/calculations/calc_{ts}/effort_result.json` olarak kaydedilir
+
+### Adım 5: Results (Sonuçlar)
+- Profil karşılaştırma grafikleri (Altair)
+- WP detay tabloları (FE, BE, fazlar, çarpanlar)
+- Faz özeti, global eforlar, risk notları
+- Excel export butonu → `output/{proje}_{timestamp}.xlsx`
+- AI danışman chat (**LLM çağrısı #3**, light tier) ile sonuçları sorgulama
+
+---
+
+# BÖLÜM 3: MODÜL DETAYLARI
+
+## llm_client.py — LLM Soyutlama Katmanı
 ```python
-import anthropic
+def get_provider() -> str        # "anthropic" veya "openai"
+def get_model_name(tier) -> str  # heavy: opus/gpt-4.1, light: sonnet/gpt-4o
+def check_api_key() -> tuple     # (ok, mesaj)
+def call_llm(system, messages, tier="heavy", max_tokens=16000, timeout=120) -> str
+```
+`LLM_PROVIDER` ortam değişkeni ile provider seçilir. Varsayılan: `anthropic`.
 
-client = anthropic.Anthropic()
-
-def generate_wbs(pdf_text: str) -> dict:
-    response = client.messages.create(
-        model="claude-opus-4-6",
-        max_tokens=16000,
-        system=WBS_SYSTEM_PROMPT,
-        messages=[
-            {"role": "user", "content": f"Aşağıdaki analiz dokümanını oku ve WBS oluştur:\n\n{pdf_text}"}
-        ]
-    )
-    # JSON parse et, doğrula, döndür
+## pdf_reader.py — PDF Okuma
+```python
+def read_pdf(filepath: str) -> tuple[str, int, int]
+    # Döndürür: (metin, sayfa_sayisi, kelime_sayisi)
 ```
 
-## WBS System Prompt (sabit string)
-
+## wbs_generator.py — WBS Üretimi (LLM Çağrısı)
+```python
+def generate_wbs(pdf_text: str) -> dict
+    # Heavy tier LLM çağrısı. WBS JSON döndürür. json-repair ile onarım.
 ```
-Sen bir "Senior Business Analyst & WBS Architect"sin.
-Amacın: Verilen analiz dokümanını inceleyerek, efor tahminlemesine altlık oluşturacak
-yapılandırılmış ve teknik detaylı bir İş Kırılım Yapısı (WBS) oluşturmaktır.
-
-GÖREV: Dokümanı oku, projeyi yönetilebilir parçalara (Work Packages) böl.
-Kesinlikle süre veya efor tahmini YAPMA. Sadece kapsamı ve karmaşıklığı tanımla.
-
-KATI KURALLAR:
-- Efor/saat/gün tahmini YAPMA.
-- Sadece dokümandaki kapsamı kullan, varsayım yapma.
-- Modül ve WP isimleri Türkçe.
-- WP'ler "teslim edilecek ürün" odaklı olmalı.
-- Her WP için technical_context alanını mutlaka doldur.
-- Granülarite: Bir WP bir feature seti büyüklüğünde olmalı.
-- Complexity drivers teknik terimlerle açıklanmalı.
-
-ÇIKTI: SADECE JSON formatında yanıt ver, başka hiçbir metin ekleme.
-JSON şeması:
+WBS JSON şeması:
+```json
 {
   "meta": {"role": "WBS_Architect", "version": "1.0", "source_doc": ""},
   "project_scope_summary": {
-    "project_name": "",
-    "core_objective": "",
-    "technical_stack_implications": [],
-    "out_of_scope_items": []
+    "project_name": "", "core_objective": "",
+    "technical_stack_implications": [], "out_of_scope_items": []
   },
   "wbs": {
     "modules": [{
-      "module_id": "MOD-001",
-      "name": "",
-      "description": "",
+      "module_id": "MOD-001", "name": "", "description": "",
       "work_packages": [{
-        "wp_id": "WP-001",
-        "name": "",
-        "description": "",
+        "wp_id": "WP-001", "name": "", "description": "",
         "deliverables": [],
         "technical_context": {
-          "frontend_requirements": "",
-          "backend_requirements": "",
-          "integration_points": [],
-          "data_implications": ""
+          "frontend_requirements": "", "backend_requirements": "",
+          "integration_points": [], "data_implications": ""
         },
-        "complexity": {
-          "level": "low|medium|high|very_high",
-          "drivers": []
-        },
+        "complexity": {"level": "low|medium|high|very_high", "drivers": []},
         "acceptance_criteria": []
       }]
     }]
@@ -207,315 +213,7 @@ JSON şeması:
 }
 ```
 
-## WBS Doğrulama
-JSON parse sonrası kontrol:
-- Her modülün module_id ve min 1 WP'si var mı
-- Her WP: wp_id, name, deliverables[], technical_context, complexity.level mevcut mu
-- complexity.level ∈ {low, medium, high, very_high}
-- wp_id unique mi
-Hata varsa retry (max 2).
-
----
-
-# BÖLÜM 4: API ÇAĞRISI #2 — EFOR HESAPLAMA
-
-## effort_calculator.py
-
-Bu modül, karar ağacı dokümanını system prompt olarak Claude API'ye gönderir.
-Copilot Studio'daki "Instructions + Knowledge Base" yapısının birebir karşılığıdır.
-
-```python
-import anthropic
-
-client = anthropic.Anthropic()
-
-def load_decision_tree() -> str:
-    """karar_agaci_v12.md dosyasını oku ve string olarak döndür."""
-    with open("karar_agaci_v12.md", "r", encoding="utf-8") as f:
-        return f.read()
-
-def calculate_effort(wbs_json: dict) -> dict:
-    decision_tree = load_decision_tree()
-    
-    system_prompt = build_effort_system_prompt(decision_tree)
-    user_message = json.dumps(wbs_json, ensure_ascii=False, indent=2)
-    
-    response = client.messages.create(
-        model="claude-opus-4-6",
-        max_tokens=32000,
-        system=system_prompt,
-        messages=[
-            {"role": "user", "content": f"Aşağıdaki WBS'in efor tahminini yap:\n\n{user_message}"}
-        ]
-    )
-    # JSON parse et, döndür
-```
-
-## Efor System Prompt
-
-System prompt iki parçadan oluşur:
-1. **Talimatlar** — hesaplama adımları, çıktı formatı
-2. **Karar ağacı** — karar_agaci_v12.md'nin tamamı
-
-```python
-def build_effort_system_prompt(decision_tree: str) -> str:
-    return f"""Sen kurumsal yazılım projelerinde efor tahmini yapan bir uzmansın.
-Verilen WBS dokümanını analiz ederek, aşağıdaki KARAR AĞACI kurallarına göre
-deterministik efor hesaplaması yapacaksın.
-
-İki çalıştırma arasında %0 sapma olmalı — aynı WBS her zaman aynı sonucu vermeli.
-WBS'te metodoloji belirtilmemişse 3 profili de (A, B, C) hesapla.
-
-HESAPLAMA ADIMLARI (SIRASI DEĞİŞMEZ):
-ADIM 0: Profil seç (A: Geleneksel, B: Copilot+Claude, C: VibeCoding)
-ADIM 1: Kategorizasyon (karar ağacı Bölüm 1) + B/C indirgeme matrisi + istisnalar
-ADIM 1.5: OneFrame eşleştirme (Bölüm 10) — ZORUNLU
-ADIM 2: Batch çarpanı (Bölüm 3.1)
-ADIM 3: Entegrasyon çarpanı (Bölüm 3.2)
-ADIM 4: Kompleksite çarpanı (Bölüm 3.3)
-ADIM 5: Faz hesaplama (Bölüm 4)
-ADIM 6: WP toplam
-ADIM 7: Reuse (Bölüm 3.4)
-ADIM 8: Min-Max (Bölüm 6)
-Sonra: Global eforlar (Bölüm 5), Bağlam çarpanları (Bölüm 11), Proje toplam
-
-KARARSIZ KALIRSAN:
-Eğer bir deliverable'ın kategorisi veya bir kararın sonucu belirsizse,
-yanıtının başına "SORU:" bloğu ekle. Örnek:
-  "SORU: WP-005 Veri Listeleme Grid — COMPLEX_UI mi SIMPLE_UI mı? 
-   5 farklı kaynaktan normalize + virtual scrolling var."
-Sorudan sonra EN OLASI senaryoyu varsayarak hesaplamaya devam et.
-Kullanıcı cevaplarsa tekrar hesaplarsın.
-
-ÇIKTI FORMATI:
-SADECE JSON döndür, başka metin ekleme. Şema:
-{{
-  "tahmin_ozeti": {{
-    "proje_adi": "",
-    "tahmin_tarihi": "YYYY-MM-DD",
-    "toplam_modul": 0,
-    "toplam_wp": 0,
-    "proje_bandi": "S|M|L|XL"
-  }},
-  "faz_formulleri": {{
-    "analiz": "...",
-    "ui_ux": "...",
-    "mimari": "...",
-    "fe": "Adj_FE",
-    "be": "Adj_BE",
-    "test": "..."
-  }},
-  "wp_detaylari": [{{
-    "modul": "MOD-001",
-    "wp_id": "WP-001",
-    "wp_adi": "",
-    "complexity": "",
-    "deliverable_sayisi": 0,
-    "baskin_kategori": "",
-    "of_eslesmesi": "",
-    "reuse_durumu": "",
-    "hesaplama_hikayesi": "",
-    "a_fe":0,"a_be":0,"a_analiz":0,"a_tasarim":0,"a_mimari":0,"a_test":0,"a_toplam":0,
-    "b_fe":0,"b_be":0,"b_analiz":0,"b_tasarim":0,"b_mimari":0,"b_test":0,"b_toplam":0,
-    "c_fe":0,"c_be":0,"c_analiz":0,"c_tasarim":0,"c_mimari":0,"c_test":0,"c_toplam":0,
-    "min_a":0,"max_a":0,"min_b":0,"max_b":0,"min_c":0,"max_c":0
-  }}],
-  "modul_toplamlari": [{{"modul": "", "a_toplam":0, "b_toplam":0, "c_toplam":0}}],
-  "faz_toplamlari": {{
-    "a": {{"analiz":0,"tasarim":0,"mimari":0,"fe":0,"be":0,"test":0,"toplam":0}},
-    "b": {{"analiz":0,"tasarim":0,"mimari":0,"fe":0,"be":0,"test":0,"toplam":0}},
-    "c": {{"analiz":0,"tasarim":0,"mimari":0,"fe":0,"be":0,"test":0,"toplam":0}}
-  }},
-  "global_eforlar": {{
-    "a": {{"pm":0,"tech_design":0,"devops":0,"deployment":0,"uat":0,"ba_base":0,"test_base":0,"uat_base":0,"toplam":0}},
-    "b": {{"pm":0,"tech_design":0,"devops":0,"deployment":0,"uat":0,"ba_base":0,"test_base":0,"uat_base":0,"toplam":0}},
-    "c": {{"pm":0,"tech_design":0,"devops":0,"deployment":0,"uat":0,"ba_base":0,"test_base":0,"uat_base":0,"toplam":0}}
-  }},
-  "proje_toplami": {{
-    "a": {{"teknik":0,"global":0,"toplam":0,"min":0,"max":0}},
-    "b": {{"teknik":0,"global":0,"toplam":0,"min":0,"max":0}},
-    "c": {{"teknik":0,"global":0,"toplam":0,"min":0,"max":0}},
-    "tasarruf_b_ag":0,"tasarruf_b_yuzde":0,
-    "tasarruf_c_ag":0,"tasarruf_c_yuzde":0
-  }},
-  "baglam_carpanlari": {{
-    "olcek":0,"ekip":0,"domain":0,"teknik_borc":0,"ent_yogunluk":0,
-    "faktor_a_b":0,"faktor_c":0
-  }},
-  "sorular": ["varsa belirsiz kararlar için sorular"],
-  "notlar": ["hesaplama kararları"],
-  "riskler": [""],
-  "kapsam_disi": [""]
-}}
-
-STABİLİTE KURALLARI:
-1. Sıra: profil→base→OF(+dışEnt)→batch→entegrasyon→kompleksite→faz→reuse
-2. Bağlam: proje toplamına. C:MAX 1.20. EntYoğunluk dahil.
-3. Yuvarlama: ara 4 ondalık, nihai A=0.5/B,C=0.1
-4. İşlem: module_id ASC → wp_id ASC
-5. Kategori: tek, "DEĞİL" kontrol. B/C indirgeme + İSTİSNALAR (4 kural).
-6. OF: 5 alan tara. Dış ent→res x1.5. "Kapsam dışı→OF gerekmez" KABUL EDİLMEZ.
-7. Sayısal alanlara SADECE sayı yaz.
-
-=== KARAR AĞACI BAŞLANGIÇ ===
-{decision_tree}
-=== KARAR AĞACI BİTİŞ ===
-"""
-```
-
-## Soru-Cevap Döngüsü
-API yanıtında `"sorular"` dizisi doluysa:
-1. Soruları kullanıcıya göster
-2. Cevapları al
-3. Cevapları ekleyerek API'yi tekrar çağır:
-```python
-messages=[
-    {"role": "user", "content": f"WBS:\n{wbs_json}"},
-    {"role": "assistant", "content": f"İlk hesaplama:\n{ilk_yanit}"},
-    {"role": "user", "content": f"Sorularına cevaplar:\n{cevaplar}\nBu cevaplara göre hesaplamayı güncelle."}
-]
-```
-
----
-
-# BÖLÜM 5: KONUŞMA AKIŞI
-
-```
-[BAŞLA] → PDF_BEKLE → WBS_URET → WBS_GOSTER
-                                      ↓
-                         ┌─── DUZENLE ←──┐
-                         │       ↓        │
-                         │  GUNCELLENDI ──┘
-                         ↓
-                    ONAYLA → EFOR_HESAPLA → SORU_VAR_MI?
-                                               ↓ hayır        ↓ evet
-                                           CSV_URET    SORU_SOR → TEKRAR_HESAPLA
-                                               ↓                       ↓
-                                            [BİTTİ]               CSV_URET
-```
-
-### Durum Detayları
-
-**PDF_BEKLE:**
-"Analiz dokümanınızı (PDF) uploads/ dizinine koyun ve dosya adını söyleyin."
-
-**WBS_URET:**
-PDF → Claude API (çağrı #1) → WBS JSON → wbs/ altına kaydet.
-Parse hatası → retry (max 2). "X modül, Y WP tespit edildi."
-
-**WBS_GOSTER:**
-Tablo: wp_id | wp_adi | complexity | deliverable_sayisi
-"Değişiklik veya onay?"
-
-**DUZENLE (döngü):**
-- "WP-003 complexity → high"
-- "WP-005 sil"
-- "MOD-002'ye WP ekle: ..."
-- "deliverable ekle/sil"
-- "integration_points'e ... ekle"
-Her değişiklik sonrası tablo tekrar. Kullanıcı "onay" diyene kadar.
-
-**EFOR_HESAPLA:**
-WBS JSON + karar_agaci_v12.md → Claude API (çağrı #2) → Efor JSON.
-
-**SORU_VAR_MI:**
-Efor JSON'da `sorular` dizisi doluysa → kullanıcıya göster, cevap al, tekrar hesapla.
-Boşsa → direkt CSV'ye geç.
-
-**CSV_URET:**
-Efor JSON → 3 CSV dosyası (Bölüm 6). Özet göster.
-"Başka proje hesaplamak ister misiniz?"
-
----
-
-# BÖLÜM 6: CSV ÇIKTI FORMATI
-
-3 dosya. UTF-8 BOM. Ayraç `;` (Excel TR uyumlu).
-Dosya adı: `[proje_kisa_adi]_*.csv`
-
-## 1. `[proje]_wp_detaylari.csv`
-Her satır 1 WP. Excel'de filtrelenebilir.
-```
-modul;wp_id;wp_adi;complexity;deliverable_sayisi;baskin_kategori;of_eslesmesi;reuse_durumu;a_analiz;a_tasarim;a_mimari;a_fe;a_be;a_test;a_toplam;b_analiz;b_tasarim;b_mimari;b_fe;b_be;b_test;b_toplam;c_analiz;c_tasarim;c_mimari;c_fe;c_be;c_test;c_toplam;min_a;max_a;min_b;max_b;min_c;max_c;hesaplama_hikayesi
-```
-
-## 2. `[proje]_ozet.csv`
-Dikey format — her satır 1 metrik:
-```
-bolum;kalem;profil_a;profil_b;profil_c
-PROJE;proje_adi;...
-PROJE;tarih;...
-PROJE;toplam_modul;...
-PROJE;toplam_wp;...
-PROJE;proje_bandi;-;[bant];[bant]
-MODUL;[MOD-001 Ad];[toplam];[toplam];[toplam]
-FAZ;analiz;...
-FAZ;tasarim;...
-FAZ;mimari;...
-FAZ;fe;...
-FAZ;be;...
-FAZ;test;...
-FAZ;toplam;...
-GLOBAL;pm;...
-GLOBAL;tech_design;...
-GLOBAL;devops;...
-GLOBAL;deployment;...
-GLOBAL;uat;...
-GLOBAL;ba_base;0;[n];[n]
-GLOBAL;test_base;0;[n];[n]
-GLOBAL;uat_base;0;[n];[n]
-GLOBAL;global_toplam;...
-TOPLAM;teknik;...
-TOPLAM;global;...
-TOPLAM;genel_toplam;...
-TOPLAM;min;...
-TOPLAM;max;...
-TOPLAM;tasarruf_ag;-;[n];[n]
-TOPLAM;tasarruf_yuzde;-;[%];[%]
-BAGLAM;faktor;...
-```
-
-## 3. `[proje]_notlar.csv`
-```
-tip;icerik
-NOT;WP-001: 3xSIMPLE_UI + 1xAUTH_COMP, OF-AUTH eşleşti
-RISK;BDDK bot mekanizması kritik
-KAPSAM_DISI;EC entegrasyonu
-```
-
----
-
-# BÖLÜM 7: KALİTE KONTROL
-
-CSV yazmadan ÖNCE Efor JSON üzerinde:
-1. WP sayısı = WBS'teki WP sayısı
-2. Σ(wp a_toplam) ≈ faz_toplamlari.a.toplam (yuvarlama farkı ±0.5 tolerans)
-3. Hiçbir WP minimum eforun altında değil (A≥1.5, B≥0.5, C≥1.0)
-4. Genellikle A ≥ B ≥ C (istisnalar hariç)
-5. Sayısal alanlarda metin yok (sadece sayı)
-
-Hata varsa kullanıcıya raporla, "Tekrar hesaplansın mı?" sor.
-
----
-
-# BÖLÜM 8: MODÜL DETAYLARI
-
-**pdf_reader.py:**
-```python
-def read_pdf(filepath: str) -> tuple[str, int, int]:
-    """Döndürür: (metin, sayfa_sayisi, kelime_sayisi)"""
-```
-
-**wbs_generator.py:**
-```python
-def generate_wbs(pdf_text: str) -> dict:
-    """Claude API çağrısı #1. WBS JSON döndür. Max 2 retry."""
-
-def validate_wbs(wbs: dict) -> list[str]:
-    """Hata listesi (boş = OK)."""
-```
-
-**wbs_editor.py:**
+## wbs_editor.py — WBS Düzenleme
 ```python
 def update_complexity(wbs, wp_id, new_level) -> dict
 def add_deliverable(wbs, wp_id, name) -> dict
@@ -525,133 +223,222 @@ def update_wp_name(wbs, wp_id, new_name) -> dict
 def add_integration_point(wbs, wp_id, point) -> dict
 ```
 
-**wbs_display.py:**
+## categorizer.py — Deliverable Kategorizasyonu (LLM Çağrısı #2)
+WBS onaylandıktan sonra çalışır. Heavy tier LLM çağrısı ile her deliverable'ı kategorize eder.
 ```python
-def display_wbs_table(wbs: dict)
-    """Konsola tablo olarak göster."""
+def categorize_wbs(wbs: dict, max_retries: int = 2) -> dict
+    # Heavy tier LLM çağrısı. Retry + json-repair destekli.
+    # Raw yanıtlar wbs/.raw_responses/ altına kaydedilir (para boşa gitmesin).
+```
+8 kategori (öncelik sırasına göre, İLK eşleşen kullanılır):
+1. `BACKGROUND_JOB` — Job, Scheduler, Queue, Batch, Cron
+2. `INTEGRATION` — 3rd party API, SAP, ERP, CRM, SSO
+3. `RULE_ENGINE` — Dynamic rules, Decision engine
+4. `EXPORT_REPORT` — PDF/Excel/CSV generation
+5. `FILE_PROCESS` — Upload+parse, bulk import
+6. `COMPLEX_UI` — Dashboard, charts, drag-drop, wizard, tree view
+7. `AUTH_COMPONENT` — Field masking, role-based UI
+8. `SIMPLE_UI` — Forms, lists, CRUD, modals (fallback)
+
+AI ayrıca şunları yapar:
+- **OneFrame eşleştirme** — 33 OF kodu (OF-AUTH, OF-CRUD, OF-DASH vb.) ile deliverable eşleşmesi
+- **Reuse tespiti** — benzer WP'leri gruplama (aynı kategori + komşu complexity + benzer deliverable sayısı)
+- **Bağlam analizi** — domain karmaşıklığı (standart/finans/regulasyon/sağlık/kritik) ve entegrasyon yoğunluğu (0-2/3-4/5-7/8+)
+- **İndirgeme istisnaları** — B/C profillerde kategori düşürülmeyecek durumları tespit (dış entegrasyon, real-time, güvenlik vb.)
+
+## effort_engine.py — Efor Hesaplama Motoru (Saf Python)
+```python
+def calculate_effort(wbs: dict, params: dict = None) -> dict
+    # Deterministik hesaplama. AI çağrısı yok.
+```
+Hesaplama sırası:
+1. Deliverable sayma & kategorizasyon → FE/BE baz değerler
+2. OneFrame residual eşleştirme
+3. OF birikim tavanı (3+ aynı OF → ×0.5)
+4. Batch çarpanı (kategori içi sıralama: 1.0, 1.0, 0.6, 0.6, 0.4)
+5. Entegrasyon çarpanı (nokta sayısına göre: 0→1.0, 1→1.15, 2→1.15, 3→1.30)
+6. Kompleksite çarpanı (low: 0.8, medium: 1.0, high: 1.25, very_high: 1.50)
+7. Faz yüzdeleri → Analiz, Tasarım, Mimari, Test
+8. Min-Max aralıkları (×0.5 – ×2.0)
+9. Reuse çarpanı (1.0, 0.7, 0.5, 0.4)
+10. Global eforlar (PM, Tech Design, DevOps, Deployment, UAT)
+11. Bağlam çarpanları (Ölçek, Ekip, Domain, Teknik Borç, Entegrasyon Yoğunluğu)
+12. VibeCoding bağlam tavanı (Profil C max ×1.20)
+
+## effort_tables.py — Parametre Yükleyici
+```python
+def reload_tables(params: dict)  # config/effort_params.json → modül globalleri
+def get_integration_multiplier(profile, point_count) -> float
+def get_size_band(technical_total) -> str  # S|M|L|XL
+def round_effort(value, profile) -> float  # A: 0.5, B/C: 0.1
 ```
 
-**effort_calculator.py:**
+## param_manager.py — Parametre Yönetimi
 ```python
-def load_decision_tree() -> str:
-    """karar_agaci_v12.md oku."""
-
-def build_effort_system_prompt(decision_tree: str) -> str:
-    """Talimatlar + karar ağacı birleştir."""
-
-def calculate_effort(wbs: dict) -> dict:
-    """Claude API çağrısı #2. Efor JSON döndür."""
-
-def recalculate_with_answers(wbs: dict, previous_result: str, answers: str) -> dict:
-    """Soru cevaplarıyla tekrar hesapla."""
+def load_params() -> dict            # config/effort_params.json oku
+def save_params(params: dict)        # config/effort_params.json yaz
+def snapshot_params(project_id, params)  # Proje-seviye snapshot
+def merge_params(global_p, overrides) -> dict  # Global + override birleştir
+def diff_from_defaults() -> dict     # Değişiklikleri göster
+def reset_to_defaults()              # Varsayılanlara dön
 ```
 
-**csv_writer.py:**
+## project_manager_v2.py — Proje Yönetimi (Versiyonlu)
 ```python
-def write_wp_details(result: dict, filepath: str)
-def write_summary(result: dict, filepath: str)
-def write_notes(result: dict, filepath: str)
+def create_project(name, description) -> str   # project_id döndür
+def load_meta(project_id) -> dict              # project.json oku
+def save_wbs_version(project_id, wbs) -> int   # v1, v2... döndür
+def load_wbs(project_id, version="latest") -> dict
+def save_calculation(project_id, calc_id, result)
+def load_latest_calculation(project_id) -> dict
+def migrate_all_projects() -> int              # Legacy format migration
 ```
 
-**quality_check.py:**
-```python
-def run_checks(wbs: dict, result: dict) -> list[str]:
-    """Hata listesi (boş = geçti)."""
+Proje dizin yapısı:
+```
+projects/{project_id}/
+├── project.json
+├── scope/extracted_text.txt
+├── wbs/v1.json, v2.json...
+└── calculations/calc_{timestamp}/
+    ├── wbs_version.txt
+    ├── effort_params.json     # Parametre snapshot
+    ├── categories.json
+    ├── effort_result.json
+    └── context.json
 ```
 
-**main.py:**
+## csv_writer.py — Excel Export
 ```python
-def main():
-    """
-    1. PDF bekle → oku
-    2. WBS üret (API #1) → göster
-    3. Düzenleme döngüsü (onaya kadar)
-    4. Efor hesapla (API #2)
-    5. Soru varsa → kullanıcıya sor → tekrar hesapla
-    6. Kalite kontrol → CSV üret → özet göster
-    7. Tekrar mı?
-    """
+def write_excel(wbs, categories, effort_result, output_path)
+    # Tek .xlsx dosyası, birden fazla sheet
 ```
+Sheet'ler: WBS, Kategorization, Effort Results, Effort Summary, Phase Summary, Global Efforts, Notes & Risks
+
+## chat_agent.py — AI Danışman
+```python
+def chat(messages, wbs, categories, effort_result, scope_text) -> str
+    # Light tier LLM çağrısı. Hesaplama sonuçlarını açıklar, karşılaştırır.
+```
+
+## quality_check.py — Kalite Kontrol
+```python
+def run_checks(wbs: dict, result: dict) -> list[str]
+    # Hata listesi (boş = geçti)
+```
+Kontroller:
+1. WP sayısı = WBS'teki WP sayısı
+2. Toplam tutarlılığı (±0.5 tolerans)
+3. Minimum efor kontrolü (A≥1.5, B≥0.5, C≥1.0)
+4. Profil sıralaması (genellikle A ≥ B ≥ C)
+5. Sayısal alanlarda metin yok
 
 ---
 
-# BÖLÜM 9: KONUŞMA ÖRNEKLERİ
+# BÖLÜM 4: KONFİGÜRASYON
 
+## config/effort_params.json
+Tüm hesaplama parametrelerini içerir:
+- `base_effort` — Profil × Kategori → [FE, BE] baz değerler
+- `batch_multipliers` — Kategori içi sıralama çarpanları
+- `integration_multipliers` — Entegrasyon nokta sayısına göre çarpanlar
+- `complexity_multipliers` — Kompleksite seviyesine göre çarpanlar
+- `reuse_multipliers` — Tekrar kullanım çarpanları
+- `analysis_pct`, `design_pct`, `architecture_pct`, `test_pct` — Faz yüzdeleri
+- `oneframe_residual` — OneFrame kod eşleştirmeleri
+- `context_multipliers` — Bağlam çarpanları
+- `size_bands` — Proje büyüklük bantları (S/M/L/XL)
+- `fixed_bases` — Sabit global eforlar
+- `global_formulas` — Global hesaplama formülleri
+- `min_max_ranges` — Min-Max aralık çarpanları
+- `minimum_effort`, `rounding_precision`, `vibe_context_cap`
+
+Bu dosya değiştiğinde `effort_tables.reload_tables()` çağrılır ve tüm hesaplama tabloları güncellenir.
+Kod değişikliği gerekmez.
+
+## .streamlit/config.toml
+```toml
+[theme]
+primaryColor = "#0066CC"
+backgroundColor = "#FAFBFC"
+textColor = "#1A1A2E"
+font = "sans serif"
+
+[server]
+headless = true
+
+[browser]
+gatherUsageStats = false
+
+[client]
+showSidebarNavigation = false
 ```
-Agent: Efor Tahmin Agent'a hoş geldiniz.
-       Analiz dokümanınızı (PDF) uploads/ dizinine koyun ve dosya adını söyleyin.
 
-User:  uploads/makro_ekonomi.pdf
+## Ortam Değişkenleri
+- `ANTHROPIC_API_KEY` — Anthropic API anahtarı (varsayılan provider)
+- `OPENAI_API_KEY` — OpenAI API anahtarı (alternatif provider)
+- `LLM_PROVIDER` — `anthropic` (varsayılan) veya `openai`
 
-Agent: ✓ PDF okundu: 12 sayfa, ~4500 kelime.
-       WBS oluşturuluyor (Claude API)...
-       
-       ✓ WBS: 4 modül, 9 work package.
-       ┌─────────┬─────────────────────────────────────┬───────────┬──────┐
-       │ wp_id   │ wp_adi                              │ complexity│ del. │
-       ├─────────┼─────────────────────────────────────┼───────────┼──────┤
-       │ WP-001  │ Kullanıcı Giriş ve Azure SSO Ent.  │ medium    │ 4    │
-       │ WP-002  │ Kullanıcı ve Rol Yönetimi           │ low       │ 3    │
-       │ ...     │ ...                                 │ ...       │ ...  │
-       └─────────┴─────────────────────────────────────┴───────────┴──────┘
-       WBS: wbs/makro_ekonomi.json
-       Değişiklik veya onay?
-
-User:  WP-005 complexity high olsun
-
-Agent: ✓ WP-005: medium → high
-       [tablo güncellenir]
-       Başka değişiklik?
-
-User:  onay
-
-Agent: ✓ WBS onaylandı. Efor hesaplanıyor (3 profil, Claude API)...
-       
-       ⚠ AI'ın 1 sorusu var:
-       WP-008 "İzleme Dashboard'u" — chart library + real-time status göstergeleri
-       içeriyor. COMPLEX_UI olarak mı hesaplayayım yoksa SIMPLE_UI olarak mı?
-       (İndirgeme istisnası: real-time keyword var)
-
-User:  COMPLEX_UI olsun
-
-Agent: ✓ Güncelleniyor...
-       
-       Hesaplama tamamlandı:
-       
-       Profil A (Geleneksel):     127.1 AG (114–139 AG)
-       Profil B (Copilot+Claude):  62.0 AG (55–68 AG)  — %51 tasarruf
-       Profil C (VibeCoding):      41.5 AG (37–46 AG)  — %67 tasarruf
-       
-       Çıktılar:
-         output/makro_wp_detaylari.csv
-         output/makro_ozet.csv
-         output/makro_notlar.csv
-       
-       Başka proje?
-```
+`.env` dosyası proje kök dizininde. `app.py` başlangıçta okur.
 
 ---
 
-# BÖLÜM 10: ÖNEMLİ NOTLAR
+# BÖLÜM 5: DOCKER & DEPLOYMENT
 
-1. **Karar ağacı = prompt.** karar_agaci_v12.md dosyası değiştiğinde sadece
-   dosyayı güncelle. Kod değişikliği gerekmez. Yeni kurallar otomatik uygulanır.
+## Dockerfile
+```dockerfile
+FROM python:3.12-slim
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential
+COPY requirements.txt . && RUN pip install --no-cache-dir -r requirements.txt
+COPY app.py karar_agaci_v12.md src/ config/ .streamlit/ .
+RUN mkdir -p uploads wbs output projects wbs/.raw_responses
+ENV STREAMLIT_SERVER_HEADLESS=true
+EXPOSE 8501
+HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health || exit 1
+ENTRYPOINT ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+```
 
-2. **Determinizm hedef ama garanti değil.** AI tabanlı hesaplama olduğu için
-   %100 aynı sonuç garanti edilemez. Ancak karar ağacındaki katı kurallar ve
-   stabilite talimatları tutarlılığı maksimize eder.
+## Çalıştırma
+```bash
+# Lokal
+streamlit run app.py
 
-3. **Soru mekanizması kritik.** AI belirsiz durumlarda varsayım yapmak yerine
-   kullanıcıya sormalı. Bu, Copilot Studio'da olmayan bir avantaj.
+# Docker
+docker build -t presales-agent .
+docker run -d -p 8501:8501 -e ANTHROPIC_API_KEY="..." presales-agent
+```
 
-4. **CSV → Excel uyumu.** UTF-8 BOM + `;` ayraç. Türkçe karakterler doğru
-   görünmeli. Excel TR'de çift tıkla aç.
+## AWS Lightsail Deployment
+Detaylı plan için bkz: `.claude/plans/` dizini.
+Özet: Lightsail Instance ($10/ay) + Docker + Caddy (otomatik SSL) + domain.
 
-5. **API maliyeti.** Her proje 2 API çağrısı: WBS (~4K input / ~4K output) +
-   Efor (~100K input / ~8K output). karar_agaci_v12.md ~90KB, bu context'e sığar.
+---
 
-6. **karar_agaci_v12.md boyutu.** ~1683 satır, ~90KB. Claude'un context window'una
-   rahatlıkla sığar. Copilot Studio'nun 8K sınırı yok.
+# BÖLÜM 6: ÖNEMLİ NOTLAR
 
-7. **Retry stratejisi.** API timeout veya parse hatası → max 2 retry.
-   3. başarısızlıkta kullanıcıya hata mesajı.
+1. **Efor hesaplama = saf Python.** AI kullanılmaz. `effort_engine.py` deterministik hesaplama yapar.
+   Aynı WBS + aynı parametreler → her zaman aynı sonuç. Parametre değişiklikleri
+   `config/effort_params.json` üzerinden yapılır, kod değişikliği gerekmez.
+
+2. **karar_agaci_v12.md = referans doküman.** Efor hesaplama kurallarının okunabilir açıklaması.
+   Kod tarafından doğrudan kullanılmaz. Kurallar `effort_engine.py` ve
+   `config/effort_params.json` içinde kodlanmıştır.
+
+3. **LLM 3 yerde kullanılır:**
+   - WBS üretimi (`wbs_generator.py`) — heavy tier
+   - Deliverable kategorizasyonu (`categorizer.py`) — heavy tier
+   - Chat danışman (`chat_agent.py`) — light tier
+
+4. **Versiyonlama.** WBS her düzenlemede yeni versiyon oluşturur (v1, v2...).
+   Her hesaplama ayrı dizinde saklanır (parametre snapshot dahil).
+
+5. **Parametre override.** Global parametreler `config/effort_params.json`'da.
+   Her proje kendi override'larını tanımlayabilir. Hesaplama sırasında
+   global + override birleştirilir.
+
+6. **Excel çıktı.** Tek `.xlsx` dosyası, birden fazla sheet.
+   UTF-8, Excel TR locale uyumlu.
+
+7. **Dual LLM provider.** `LLM_PROVIDER=openai` ile OpenAI'a geçilebilir.
+   Kod değişikliği gerekmez.
