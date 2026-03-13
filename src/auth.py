@@ -247,14 +247,23 @@ def verify_code(email: str, code: str, session: str) -> dict:
 def _sign_up_user(client, pool_id: str, client_id: str, email: str) -> None:
     """Yeni Cognito kullanicisi olustur (whitelist'te olan kisi icin)."""
     temp_pw = secrets.token_urlsafe(32) + "!A1"  # Cognito password policy uyumu
-    client.sign_up(
-        ClientId=client_id,
+    client.admin_create_user(
+        UserPoolId=pool_id,
+        Username=email,
+        UserAttributes=[
+            {"Name": "email", "Value": email},
+            {"Name": "email_verified", "Value": "true"},
+        ],
+        TemporaryPassword=temp_pw,
+        MessageAction="SUPPRESS",  # Hosgeldin maili gonderme
+    )
+    # Kullaniciyi CONFIRMED durumuna getir
+    client.admin_set_user_password(
+        UserPoolId=pool_id,
         Username=email,
         Password=temp_pw,
-        UserAttributes=[{"Name": "email", "Value": email}],
+        Permanent=True,
     )
-    # Admin confirm — kullanici hemen aktif, email dogrulama gerekmez
-    client.admin_confirm_sign_up(UserPoolId=pool_id, Username=email)
 
 
 # ── Dev Modu (Cognito olmadan test) ──────────────────────────────────────────
