@@ -19,27 +19,26 @@ _LOGIN_CSS = """
 [data-testid="stSidebarCollapsedControl"] { display: none !important; }
 [data-testid="stMainBlockContainer"] { max-width: 1200px; }
 
-/* Beyaz kart — st.container(border=True) */
-[data-testid="stVerticalBlockBorderWrapper"] {
+/* Form = beyaz kart */
+[data-testid="stForm"] {
     background: #ffffff !important;
     border-radius: 18px !important;
     border: none !important;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3) !important;
     padding: 2rem 1.5rem !important;
     max-width: 420px;
-    margin-top: 6vh;
 }
 
-/* Kart icerisindeki tum metin ogeleri koyu renk */
-[data-testid="stVerticalBlockBorderWrapper"] p,
-[data-testid="stVerticalBlockBorderWrapper"] span,
-[data-testid="stVerticalBlockBorderWrapper"] label,
-[data-testid="stVerticalBlockBorderWrapper"] .stMarkdown {
+/* Form icerisindeki metin ogeleri koyu renk */
+[data-testid="stForm"] p,
+[data-testid="stForm"] span,
+[data-testid="stForm"] label,
+[data-testid="stForm"] .stMarkdown {
     color: #333 !important;
 }
 
 /* Form input'lari */
-[data-testid="stVerticalBlockBorderWrapper"] input {
+[data-testid="stForm"] input {
     background: #fff !important;
     border: 1.5px solid #ddd !important;
     border-radius: 8px !important;
@@ -47,11 +46,11 @@ _LOGIN_CSS = """
     font-size: 1rem !important;
     color: #333 !important;
 }
-[data-testid="stVerticalBlockBorderWrapper"] input:focus {
+[data-testid="stForm"] input:focus {
     border-color: #1a3a6b !important;
     box-shadow: 0 0 0 2px rgba(26,58,107,0.15) !important;
 }
-[data-testid="stVerticalBlockBorderWrapper"] label {
+[data-testid="stForm"] label {
     font-weight: 500 !important;
 }
 
@@ -73,11 +72,15 @@ _LOGIN_CSS = """
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
-/* Secondary butonlar */
-[data-testid="stVerticalBlockBorderWrapper"] button[kind="secondary"] {
-    color: #1a3a6b !important;
-    border-color: #ccc !important;
-    background: #f8f9fa !important;
+/* Koyu arka plan uzerindeki secondary butonlar */
+button[kind="secondary"] {
+    color: #ffffff !important;
+    border-color: rgba(255,255,255,0.3) !important;
+    background: rgba(255,255,255,0.1) !important;
+}
+button[kind="secondary"]:hover {
+    background: rgba(255,255,255,0.2) !important;
+    border-color: rgba(255,255,255,0.5) !important;
 }
 
 /* Logo container ortalama */
@@ -118,6 +121,17 @@ _P_LOGO_SVG = """
 </div>
 """
 
+# ── Footer HTML (koyu arka plan uzerinde) ─────────────────────────────────────
+
+_FOOTER_HTML = (
+    '<div style="text-align:center; margin-top:1.5rem;">'
+    '<span style="color:#cc2233; font-weight:700; font-size:1rem;">Koc</span>'
+    '<span style="color:#6688bb; font-weight:700; font-size:1rem;">Sistem</span>'
+    '<div style="color:rgba(255,255,255,0.5); font-size:0.65rem; margin-top:2px;">'
+    "Turkey's Leading ICT Company</div>"
+    '</div>'
+)
+
 
 # ── Ana render ───────────────────────────────────────────────────────────────
 
@@ -157,51 +171,38 @@ def show_login():
             unsafe_allow_html=True,
         )
 
-    # ────── SAG: Beyaz Kart (st.container ile) ──────
+    # ────── SAG: Form Karti ──────
     with col_right:
-        with st.container(border=True):
-            # Hata mesaji
-            if st.session_state.login_error:
-                st.error(st.session_state.login_error)
-                st.session_state.login_error = ""
+        # Hata mesaji (koyu arka plan uzerinde — st.error kendi bg'sini kullanir)
+        if st.session_state.login_error:
+            st.error(st.session_state.login_error)
+            st.session_state.login_error = ""
 
-            if st.session_state.login_step == "email":
-                _show_email_step()
-            elif st.session_state.login_step == "code":
-                _show_code_step()
+        if st.session_state.login_step == "email":
+            _show_email_step()
+        elif st.session_state.login_step == "code":
+            _show_code_step()
 
-            # KocSistem footer
-            st.markdown(
-                '<div style="text-align:center; margin-top:1rem; '
-                'padding-top:0.8rem; border-top:1px solid #eee;">'
-                '<div style="font-weight:700; font-size:1rem;">'
-                '<span style="color:#cc2233;">Koc</span>'
-                '<span style="color:#1a3a6b;">Sistem</span>'
-                '</div>'
-                '<div style="font-size:0.65rem; color:#999; margin-top:2px;">'
-                "Turkey's Leading ICT Company</div>"
-                '</div>',
-                unsafe_allow_html=True,
-            )
+        # Footer (koyu arka plan uzerinde)
+        st.markdown(_FOOTER_HTML, unsafe_allow_html=True)
 
 
 # ── Form Adimlari ────────────────────────────────────────────────────────────
 
 
 def _show_email_step():
-    """Asama 1: E-posta girisi."""
-    st.markdown(
-        '<p style="color:#1a2744; font-size:1.6rem; font-weight:700; '
-        'margin-bottom:0;">Giris Yap</p>',
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        '<p style="color:#888; font-size:0.9rem; margin-bottom:1rem;">'
-        'Hesabiniza giris yapin</p>',
-        unsafe_allow_html=True,
-    )
-
+    """Asama 1: E-posta girisi — basliklar formun ICINDE."""
     with st.form("login_email_form"):
+        st.markdown(
+            '<p style="color:#1a2744; font-size:1.6rem; font-weight:700; '
+            'margin-bottom:0;">Giris Yap</p>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<p style="color:#888; font-size:0.9rem; margin-bottom:1rem;">'
+            'Hesabiniza giris yapin</p>',
+            unsafe_allow_html=True,
+        )
         email = st.text_input(
             "E-posta",
             placeholder=f"adiniz@{ALLOWED_DOMAIN}",
@@ -240,21 +241,20 @@ def _show_email_step():
 
 
 def _show_code_step():
-    """Asama 2: OTP kod dogrulama."""
+    """Asama 2: OTP kod dogrulama — basliklar formun ICINDE."""
     email = st.session_state.login_email
 
-    st.markdown(
-        '<p style="color:#1a2744; font-size:1.6rem; font-weight:700; '
-        'margin-bottom:0;">Dogrulama</p>',
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        f'<p style="color:#888; font-size:0.9rem; margin-bottom:1rem;">'
-        f'<b style="color:#1a2744;">{email}</b> adresine kod gonderildi</p>',
-        unsafe_allow_html=True,
-    )
-
     with st.form("login_code_form"):
+        st.markdown(
+            '<p style="color:#1a2744; font-size:1.6rem; font-weight:700; '
+            'margin-bottom:0;">Dogrulama</p>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            f'<p style="color:#888; font-size:0.9rem; margin-bottom:1rem;">'
+            f'<b style="color:#1a2744;">{email}</b> adresine kod gonderildi</p>',
+            unsafe_allow_html=True,
+        )
         code = st.text_input(
             "Dogrulama Kodu",
             max_chars=8,
@@ -265,6 +265,7 @@ def _show_code_step():
             "Giris Yap", type="primary", use_container_width=True
         )
 
+    # Secondary butonlar (formun disinda, koyu arka plan uzerinde)
     col1, col2 = st.columns(2)
     with col1:
         if st.button("Tekrar Gonder", use_container_width=True, key="btn_resend"):
